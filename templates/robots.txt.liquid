@@ -1,0 +1,21 @@
+{% comment %}
+  Do NOT remove the robots.default_groups loop below. It preserves every
+  Shopify-generated rule (Disallow paths for checkout, cart, admin, etc.)
+  and the auto-generated sitemap directive. Removing it would strip those
+  defaults and expose URLs Shopify deliberately keeps out of the index.
+
+  The appended groups below only ADD explicit "Allow: /" for AI/search
+  crawlers we want to permit full access. No Disallow rules are added here.
+{% endcomment %}
+{%- for group in robots.default_groups -%}
+{{ group.user_agent }}
+{% for rule in group.rules %}{{ rule }}
+{% endfor %}{% if group.sitemap %}{{ group.sitemap }}{% endif %}
+
+{% endfor -%}
+{%- assign extra_agents = 'GPTBot,OAI-SearchBot,ChatGPT-User,ClaudeBot,Claude-User,Claude-SearchBot,PerplexityBot,Perplexity-User,Google-Extended,Applebot-Extended,CCBot,meta-externalagent,Amazonbot,bingbot' | split: ',' -%}
+{%- for agent in extra_agents -%}
+User-agent: {{ agent }}
+Allow: /
+
+{% endfor -%}

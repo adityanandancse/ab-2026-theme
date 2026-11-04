@@ -1,0 +1,1233 @@
+{% doc %}
+  @prompt
+    Create a Shopify section named "PDF or Page Grid (Animated Popup)".
+    
+    Each block in the section should let me upload:
+    
+    A cover image,
+    
+    A title (optional),
+    
+    A URL link (which can be either a PDF file or an HTML page).
+    
+    The section should:
+    
+    Display all blocks in a responsive grid layout (3–4 columns depending on screen size).
+    
+    When the cover image is clicked:
+    
+    If the link ends with .pdf, open the PDF inside a lightbox popup with a smooth fade-in and slide-up animation.
+    
+    If it’s an HTML page, open it in a new browser tab.
+    
+    Include a close button (×) inside the popup that smoothly rotates on hover.
+    
+    The popup should fade out when closed.
+    
+    Use only HTML, CSS, and vanilla JavaScript — no external libraries.
+    
+    Include a clean, minimal, elegant style consistent with Achin Bindlish’s couture aesthetic — refined transitions, rounded corners, soft shadows.
+    
+    Add schema settings so I can add multiple blocks with their own image, title, and link in the theme editor., Give all the customisations possible, Give option to manually upload pdf, that open in lightbox, Give option to shoe the list as carousel and Grid with customisations
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-pdf-grid-block-{{ ai_gen_id }} {
+    padding: {{ block.settings.block_padding_top }}px 0 {{ block.settings.block_padding_bottom }}px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-pdf-grid-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.container_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-pdf-grid-heading-{{ ai_gen_id }} {
+    text-align: {{ block.settings.heading_alignment }};
+    margin-bottom: {{ block.settings.heading_spacing }}px;
+    color: {{ block.settings.heading_color }};
+    font-size: {{ block.settings.heading_size }}px;
+  }
+
+  .ai-pdf-grid-wrapper-{{ ai_gen_id }} {
+    {% if block.settings.layout_type == 'carousel' %}
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: {{ block.settings.grid_gap }}px;
+      padding-bottom: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: {{ block.settings.scrollbar_color }} transparent;
+    {% else %}
+      display: grid;
+      grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+      gap: {{ block.settings.grid_gap }}px;
+    {% endif %}
+  }
+
+  .ai-pdf-grid-wrapper-{{ ai_gen_id }}::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .ai-pdf-grid-wrapper-{{ ai_gen_id }}::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ai-pdf-grid-wrapper-{{ ai_gen_id }}::-webkit-scrollbar-thumb {
+    background-color: {{ block.settings.scrollbar_color }};
+    border-radius: 10px;
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }} {
+    {% if block.settings.layout_type == 'carousel' %}
+      flex: 0 0 {{ block.settings.carousel_item_width }}%;
+      scroll-snap-align: start;
+    {% endif %}
+    position: relative;
+    cursor: pointer;
+    border-radius: {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.card_background }};
+    box-shadow: {{ block.settings.card_shadow_x }}px {{ block.settings.card_shadow_y }}px {{ block.settings.card_shadow_blur }}px {{ block.settings.card_shadow_color }};
+    transition: transform {{ block.settings.hover_transition_speed }}s ease, box-shadow {{ block.settings.hover_transition_speed }}s ease;
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }}:hover {
+    transform: translateY(-{{ block.settings.hover_lift }}px) scale({{ block.settings.hover_scale }});
+    box-shadow: {{ block.settings.hover_shadow_x }}px {{ block.settings.hover_shadow_y }}px {{ block.settings.hover_shadow_blur }}px {{ block.settings.hover_shadow_color }};
+  }
+
+  .ai-pdf-grid-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    padding-bottom: {{ block.settings.image_aspect_ratio }}%;
+    overflow: hidden;
+  }
+
+  .ai-pdf-grid-image-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform {{ block.settings.hover_transition_speed }}s ease;
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }}:hover .ai-pdf-grid-image-{{ ai_gen_id }} {
+    transform: scale({{ block.settings.image_hover_scale }});
+  }
+
+  .ai-pdf-grid-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 0%, {{ block.settings.overlay_color }} 100%);
+    opacity: {{ block.settings.overlay_opacity }};
+    transition: opacity {{ block.settings.hover_transition_speed }}s ease;
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }}:hover .ai-pdf-grid-overlay-{{ ai_gen_id }} {
+    opacity: {{ block.settings.overlay_hover_opacity }};
+  }
+
+  .ai-pdf-grid-icon-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    background-color: {{ block.settings.icon_background }};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: {{ block.settings.icon_opacity }};
+    transition: all {{ block.settings.hover_transition_speed }}s ease;
+    z-index: 2;
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }}:hover .ai-pdf-grid-icon-{{ ai_gen_id }} {
+    opacity: {{ block.settings.icon_hover_opacity }};
+    transform: translate(-50%, -50%) scale({{ block.settings.icon_hover_scale }});
+  }
+
+  .ai-pdf-grid-icon-{{ ai_gen_id }} svg {
+    width: {{ block.settings.icon_size | times: 0.5 }}px;
+    height: {{ block.settings.icon_size | times: 0.5 }}px;
+    fill: {{ block.settings.icon_color }};
+  }
+
+  .ai-pdf-grid-title-{{ ai_gen_id }} {
+    padding: {{ block.settings.title_padding }}px;
+    text-align: {{ block.settings.title_alignment }};
+    color: {{ block.settings.title_color }};
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: {{ block.settings.title_weight }};
+    line-height: 1.4;
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{ block.settings.lightbox_overlay_color }};
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity {{ block.settings.lightbox_fade_speed }}s ease;
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }}.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+    position: relative;
+    width: {{ block.settings.lightbox_width }}%;
+    height: {{ block.settings.lightbox_height }}%;
+    background-color: {{ block.settings.lightbox_background }};
+    border-radius: {{ block.settings.lightbox_border_radius }}px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: translateY(30px);
+    transition: transform {{ block.settings.lightbox_slide_speed }}s ease;
+    overflow: hidden;
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }}.active .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+    transform: translateY(0);
+  }
+
+  .ai-pdf-lightbox-iframe-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .ai-pdf-lightbox-close-{{ ai_gen_id }} {
+    position: absolute;
+    top: {{ block.settings.close_button_position }}px;
+    right: {{ block.settings.close_button_position }}px;
+    width: {{ block.settings.close_button_size }}px;
+    height: {{ block.settings.close_button_size }}px;
+    background-color: {{ block.settings.close_button_background }};
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: all {{ block.settings.hover_transition_speed }}s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .ai-pdf-lightbox-close-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.close_button_hover_background }};
+    transform: rotate({{ block.settings.close_button_rotate }}deg) scale({{ block.settings.close_button_hover_scale }});
+  }
+
+  .ai-pdf-lightbox-close-{{ ai_gen_id }} svg {
+    width: {{ block.settings.close_button_size | times: 0.5 }}px;
+    height: {{ block.settings.close_button_size | times: 0.5 }}px;
+    stroke: {{ block.settings.close_button_color }};
+  }
+
+  @media screen and (max-width: 989px) {
+    .ai-pdf-grid-wrapper-{{ ai_gen_id }} {
+      {% if block.settings.layout_type == 'grid' %}
+        grid-template-columns: repeat({{ block.settings.columns_tablet }}, 1fr);
+      {% endif %}
+    }
+
+    .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+      width: 95%;
+      height: 85%;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-pdf-grid-wrapper-{{ ai_gen_id }} {
+      {% if block.settings.layout_type == 'grid' %}
+        grid-template-columns: 1fr;
+      {% endif %}
+    }
+
+    .ai-pdf-grid-item-{{ ai_gen_id }} {
+      {% if block.settings.layout_type == 'carousel' %}
+        flex: 0 0 {{ block.settings.carousel_item_width_mobile }}%;
+      {% endif %}
+    }
+
+    .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .ai-pdf-grid-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size | times: 0.7 }}px;
+    }
+  }
+{% endstyle %}
+
+<pdf-grid-block-{{ ai_gen_id }} class="ai-pdf-grid-block-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-pdf-grid-container-{{ ai_gen_id }}">
+    {% if block.settings.block_heading != blank %}
+      <h2 class="ai-pdf-grid-heading-{{ ai_gen_id }}">{{ block.settings.block_heading }}</h2>
+    {% endif %}
+
+    <div class="ai-pdf-grid-wrapper-{{ ai_gen_id }}">
+      {% liquid
+        assign item_1_is_pdf = false
+        if block.settings.item_1_link_url contains '.pdf'
+          assign item_1_is_pdf = true
+        elsif block.settings.item_1_pdf_file != blank
+          assign item_1_is_pdf = true
+        endif
+
+        assign item_2_is_pdf = false
+        if block.settings.item_2_link_url contains '.pdf'
+          assign item_2_is_pdf = true
+        elsif block.settings.item_2_pdf_file != blank
+          assign item_2_is_pdf = true
+        endif
+
+        assign item_3_is_pdf = false
+        if block.settings.item_3_link_url contains '.pdf'
+          assign item_3_is_pdf = true
+        elsif block.settings.item_3_pdf_file != blank
+          assign item_3_is_pdf = true
+        endif
+
+        assign item_4_is_pdf = false
+        if block.settings.item_4_link_url contains '.pdf'
+          assign item_4_is_pdf = true
+        elsif block.settings.item_4_pdf_file != blank
+          assign item_4_is_pdf = true
+        endif
+
+        assign item_5_is_pdf = false
+        if block.settings.item_5_link_url contains '.pdf'
+          assign item_5_is_pdf = true
+        elsif block.settings.item_5_pdf_file != blank
+          assign item_5_is_pdf = true
+        endif
+
+        assign item_6_is_pdf = false
+        if block.settings.item_6_link_url contains '.pdf'
+          assign item_6_is_pdf = true
+        elsif block.settings.item_6_pdf_file != blank
+          assign item_6_is_pdf = true
+        endif
+      %}
+
+      {% for i in (1..6) %}
+        {% liquid
+          assign cover_image_key = 'item_' | append: i | append: '_cover_image'
+          assign title_key = 'item_' | append: i | append: '_title'
+          assign link_url_key = 'item_' | append: i | append: '_link_url'
+          assign pdf_file_key = 'item_' | append: i | append: '_pdf_file'
+          assign is_pdf_key = 'item_' | append: i | append: '_is_pdf'
+
+          assign cover_image = block.settings[cover_image_key]
+          assign title = block.settings[title_key]
+          assign link_url = block.settings[link_url_key]
+          assign pdf_file = block.settings[pdf_file_key]
+          assign is_pdf = false
+
+          if link_url contains '.pdf'
+            assign is_pdf = true
+          elsif pdf_file != blank
+            assign is_pdf = true
+          endif
+        %}
+
+        {% if cover_image != blank or title != blank or link_url != blank or pdf_file != blank %}
+          <div
+            class="ai-pdf-grid-item-{{ ai_gen_id }}"
+            data-item-id="{{ i }}"
+            data-is-pdf="{{ is_pdf }}"
+            {% if is_pdf %}
+              {% if pdf_file != blank %}
+                data-pdf-url="{{ pdf_file }}"
+              {% else %}
+                data-pdf-url="{{ link_url }}"
+              {% endif %}
+            {% else %}
+              data-page-url="{{ link_url }}"
+            {% endif %}
+          >
+            <div class="ai-pdf-grid-image-wrapper-{{ ai_gen_id }}">
+              {% if cover_image %}
+                <img
+                  src="{{ cover_image | image_url: width: 800 }}"
+                  alt="{{ title | escape }}"
+                  class="ai-pdf-grid-image-{{ ai_gen_id }}"
+                  loading="lazy"
+                  width="800"
+                  height="{{ 800 | times: block.settings.image_aspect_ratio | divided_by: 100 }}"
+                >
+              {% else %}
+                <div class="ai-pdf-grid-image-{{ ai_gen_id }}" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+
+              <div class="ai-pdf-grid-overlay-{{ ai_gen_id }}"></div>
+
+              {% if block.settings.show_icon %}
+                <div class="ai-pdf-grid-icon-{{ ai_gen_id }}">
+                  {% if is_pdf %}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                  {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+            {% if title != blank %}
+              <div class="ai-pdf-grid-title-{{ ai_gen_id }}">{{ title }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ai-pdf-lightbox-{{ ai_gen_id }}" id="ai-pdf-lightbox-{{ ai_gen_id }}">
+    <button class="ai-pdf-lightbox-close-{{ ai_gen_id }}" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="ai-pdf-lightbox-content-{{ ai_gen_id }}">
+      <iframe class="ai-pdf-lightbox-iframe-{{ ai_gen_id }}" id="ai-pdf-iframe-{{ ai_gen_id }}"></iframe>
+    </div>
+  </div>
+</pdf-grid-block-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class PdfGridBlock{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.lightbox = this.querySelector('.ai-pdf-lightbox-{{ ai_gen_id }}');
+        this.iframe = this.querySelector('.ai-pdf-lightbox-iframe-{{ ai_gen_id }}');
+        this.closeButton = this.querySelector('.ai-pdf-lightbox-close-{{ ai_gen_id }}');
+        this.items = this.querySelectorAll('.ai-pdf-grid-item-{{ ai_gen_id }}');
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.items.forEach((item) => {
+          item.addEventListener('click', () => this.handleItemClick(item));
+        });
+
+        this.closeButton.addEventListener('click', () => this.closeLightbox());
+
+        this.lightbox.addEventListener('click', (e) => {
+          if (e.target === this.lightbox) {
+            this.closeLightbox();
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.lightbox.classList.contains('active')) {
+            this.closeLightbox();
+          }
+        });
+      }
+
+      handleItemClick(item) {
+        const isPdf = item.dataset.isPdf === 'true';
+
+        if (isPdf) {
+          const pdfUrl = item.dataset.pdfUrl;
+          if (pdfUrl) {
+            this.openLightbox(pdfUrl);
+          }
+        } else {
+          const pageUrl = item.dataset.pageUrl;
+          if (pageUrl) {
+            window.open(pageUrl, '_blank');
+          }
+        }
+      }
+
+      openLightbox(url) {
+        this.iframe.src = url;
+        this.lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      closeLightbox() {
+        this.lightbox.classList.remove('active');
+        setTimeout(() => {
+          this.iframe.src = '';
+        }, {{ block.settings.lightbox_fade_speed | times: 1000 }});
+        document.body.style.overflow = '';
+      }
+    }
+
+    customElements.define('pdf-grid-block-{{ ai_gen_id }}', PdfGridBlock{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "PDF Grid Popup",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "block_heading",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 16,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Size",
+      "default": 32
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Spacing",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout_type",
+      "label": "Type",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "carousel", "label": "Carousel" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (tablet)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "carousel_item_width",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Carousel width (desktop)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "carousel_item_width_mobile",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Carousel width (mobile)",
+      "default": 85
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 800,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "label": "Container width",
+      "default": 1200
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "block_padding_top",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "block_padding_bottom",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_x",
+      "min": -20,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Shadow X",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_y",
+      "min": -20,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Shadow Y",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_blur",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Shadow blur",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "card_shadow_color",
+      "label": "Shadow color",
+      "default": "rgba(0, 0, 0, 0.1)"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "range",
+      "id": "image_aspect_ratio",
+      "min": 50,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "label": "Aspect ratio",
+      "default": 75
+    },
+    {
+      "type": "range",
+      "id": "image_hover_scale",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Hover scale",
+      "default": 1.1
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color",
+      "default": "rgba(0, 0, 0, 0.4)"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Opacity",
+      "default": 0.3
+    },
+    {
+      "type": "range",
+      "id": "overlay_hover_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Hover opacity",
+      "default": 0.6
+    },
+    {
+      "type": "header",
+      "content": "Icon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show icon",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Size",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "icon_background",
+      "label": "Background",
+      "default": "rgba(255, 255, 255, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "icon_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Opacity",
+      "default": 0.8
+    },
+    {
+      "type": "range",
+      "id": "icon_hover_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Hover opacity",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "icon_hover_scale",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Hover scale",
+      "default": 1.2
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "title_alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "title_weight",
+      "min": 300,
+      "max": 900,
+      "step": 100,
+      "label": "Weight",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "title_padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Hover effects"
+    },
+    {
+      "type": "range",
+      "id": "hover_lift",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Lift",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "hover_scale",
+      "min": 1,
+      "max": 1.2,
+      "step": 0.1,
+      "label": "Scale",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "hover_shadow_x",
+      "min": -20,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Shadow X",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "hover_shadow_y",
+      "min": -20,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Shadow Y",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "hover_shadow_blur",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Shadow blur",
+      "default": 40
+    },
+    {
+      "type": "color",
+      "id": "hover_shadow_color",
+      "label": "Shadow color",
+      "default": "rgba(0, 0, 0, 0.15)"
+    },
+    {
+      "type": "range",
+      "id": "hover_transition_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Transition speed",
+      "default": 0.3
+    },
+    {
+      "type": "header",
+      "content": "Carousel scrollbar"
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_color",
+      "label": "Color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "header",
+      "content": "Lightbox"
+    },
+    {
+      "type": "color",
+      "id": "lightbox_overlay_color",
+      "label": "Overlay",
+      "default": "rgba(0, 0, 0, 0.85)"
+    },
+    {
+      "type": "color",
+      "id": "lightbox_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "lightbox_width",
+      "min": 50,
+      "max": 95,
+      "step": 5,
+      "unit": "%",
+      "label": "Width",
+      "default": 85
+    },
+    {
+      "type": "range",
+      "id": "lightbox_height",
+      "min": 50,
+      "max": 95,
+      "step": 5,
+      "unit": "%",
+      "label": "Height",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "lightbox_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "lightbox_fade_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Fade speed",
+      "default": 0.3
+    },
+    {
+      "type": "range",
+      "id": "lightbox_slide_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Slide speed",
+      "default": 0.4
+    },
+    {
+      "type": "header",
+      "content": "Close button"
+    },
+    {
+      "type": "range",
+      "id": "close_button_size",
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Size",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "close_button_position",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Position",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "close_button_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "close_button_hover_background",
+      "label": "Hover background",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "close_button_color",
+      "label": "Icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "close_button_rotate",
+      "min": 0,
+      "max": 360,
+      "step": 45,
+      "unit": "deg",
+      "label": "Hover rotation",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "close_button_hover_scale",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Hover scale",
+      "default": 1.1
+    },
+    {
+      "type": "header",
+      "content": "Item 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_1_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_1_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_1_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_1_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    },
+    {
+      "type": "header",
+      "content": "Item 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_2_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_2_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_2_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_2_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    },
+    {
+      "type": "header",
+      "content": "Item 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_3_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_3_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_3_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_3_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    },
+    {
+      "type": "header",
+      "content": "Item 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_4_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_4_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_4_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_4_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    },
+    {
+      "type": "header",
+      "content": "Item 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_5_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_5_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_5_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_5_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    },
+    {
+      "type": "header",
+      "content": "Item 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "item_6_cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "item_6_title",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "item_6_link_url",
+      "label": "URL link"
+    },
+    {
+      "type": "text",
+      "id": "item_6_pdf_file",
+      "label": "PDF file URL",
+      "info": "Upload PDF to Files, paste URL here"
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDF Grid Popup"
+    }
+  ]
+}
+{% endschema %}

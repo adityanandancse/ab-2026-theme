@@ -1,0 +1,215 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "content_direction": "column",
+        "gap": 32,
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    },
+    "section_QcgkNd": {
+      "type": "section",
+      "blocks": {
+        "ai_gen_block_a364fbc_4rjkPc": {
+          "type": "ai_gen_block_a364fbc",
+          "settings": {
+            "layout": "image_left",
+            "max_width": 1200,
+            "content_gap": 60,
+            "vertical_alignment": "center",
+            "image": "shopify://shop_images/464464932_534015235919120_6174398126318800184_n.jpg",
+            "image_aspect_ratio": "auto",
+            "image_border_radius": 2,
+            "image_shadow": true,
+            "image_hover_effect": "zoom",
+            "eyebrow_text": "About us",
+            "heading": "",
+            "description": "<p>At <strong>Achin Bindlish</strong>, couture is not just clothing - it’s the art of creating heirlooms. Every stitch, every fold, every motif carries the essence of generations-old artistry, reimagined for a contemporary world.</p><p>Our philosophy is simple yet profound: true elegance lives in the details. From sourcing the world’s finest fabrics to collaborating with master artisans who handcraft every embellishment, each creation is shaped by patience, precision, and passion. The result - timeless couture that tells your story with quiet power and undeniable presence. </p><p>Whether it’s an unforgettable wedding ensemble, a statement-making formal look, or attire for life’s most intimate celebrations, our designs go beyond trends. They are made to be worn, remembered, and passed on - a part of your legacy.</p><p>In our<strong> Defence Colony, New Delhi</strong> studio, every experience is personal. We work on a limited, <strong>appointment-only basis</strong>, ensuring that from the very first sketch to the final fitting, your journey is as bespoke as the garment itself.</p><p>At Achin Bindlish, we don’t just design couture. We design moments, emotions, and legacies.</p>",
+            "text_spacing": 10,
+            "text_alignment": "left",
+            "button_text": "Book Appointment",
+            "button_link": "shopify://pages/contact",
+            "button_full_width": true,
+            "background_color": "#efeded",
+            "eyebrow_color": "#666666",
+            "heading_color": "#000000",
+            "text_color": "#333333",
+            "button_background": "#000000",
+            "button_text_color": "#efeded",
+            "button_border_color": "#000000",
+            "button_hover_background": "#333333",
+            "button_hover_text_color": "#ffffff",
+            "button_hover_border_color": "#333333",
+            "eyebrow_size": 20,
+            "eyebrow_weight": "400",
+            "eyebrow_transform": "uppercase",
+            "heading_size": 42,
+            "heading_weight": "700",
+            "heading_line_height": 1.2,
+            "text_size": 16,
+            "text_line_height": 1.6,
+            "button_font_size": 16,
+            "button_font_weight": "500",
+            "button_text_transform": "none",
+            "button_padding_vertical": 14,
+            "button_padding_horizontal": 28,
+            "button_border_width": 1,
+            "button_border_radius": 6,
+            "button_shadow": false,
+            "button_hover_effect": "lift",
+            "section_padding_top": 0,
+            "section_padding_bottom": 0,
+            "mobile_image_first": true,
+            "mobile_text_alignment": "left",
+            "mobile_button_full_width": true
+          },
+          "blocks": {}
+        },
+        "text_8YLqYV": {
+          "type": "text",
+          "name": "t:names.heading",
+          "settings": {
+            "text": "<h3>The Process</h3><h5>(How we do it)</h5>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "rte",
+            "font": "var(--font-body--family)",
+            "font_size": "2.5rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "ai_gen_block_e918e26_cPQ4Kj": {
+          "type": "ai_gen_block_e918e26",
+          "name": "Interactive step process",
+          "settings": {
+            "gap": 40,
+            "padding": 20,
+            "image_border_radius": 2,
+            "active_line_color": "#6b0e0e",
+            "inactive_line_color": "#e6e6e6",
+            "active_step_color": "#a30a0a",
+            "active_step_text_color": "#ffffff",
+            "inactive_step_color": "#f4f4f4",
+            "inactive_step_text_color": "#666666",
+            "active_text_color": "#000000",
+            "inactive_text_color": "#666666",
+            "description_color": "#999999",
+            "content_title_color": "#000000",
+            "content_text_color": "#333333",
+            "step_title_size": 16,
+            "step_description_size": 14,
+            "content_title_size": 28,
+            "content_text_size": 16,
+            "step_1_enabled": true,
+            "step_1_title": "Consultation & Vision",
+            "step_1_description": "Your journey begins with a one-on-one consultation, where your ideas and inspirations take their first shape.",
+            "step_1_image": "shopify://shop_images/ChatGPT_Image_Aug_28_2025_12_54_28_PM.png",
+            "step_1_content_title": "Where Your Story Begins",
+            "step_1_content_text": "<p>We explore your personality, occasion, and style aspirations. Together, we sketch the first outlines of your dream attire - a vision that reflects <em>you</em>.</p>",
+            "step_2_enabled": true,
+            "step_2_title": "Sketches & Fabrics",
+            "step_2_description": "Imagination turns tangible through hand-drawn sketches and curated fabric swatches.",
+            "step_2_image": "shopify://shop_images/ChatGPT_Image_Aug_28_2025_01_01_14_PM.png",
+            "step_2_content_title": "From Imagination to Paper",
+            "step_2_content_text": "<p>From silks to velvets, heritage weaves to contemporary textures, every fabric and design choice is thoughtfully selected to embody your individuality.</p>",
+            "step_3_enabled": true,
+            "step_3_title": "Handcrafted Artistry",
+            "step_3_description": "Master artisans bring life to your couture through timeless craftsmanship.",
+            "step_3_image": "shopify://shop_images/ChatGPT_Image_Aug_28_2025_01_03_52_PM.png",
+            "step_3_content_title": "The Craft of Perfection",
+            "step_3_content_text": "<p>Every motif is hand-embroidered, every bead sewn with precision, and every drape sculpted to perfection. Hours, sometimes weeks, are dedicated to create details that whisper artistry.</p>",
+            "step_4_enabled": true,
+            "step_4_title": "Fittings & Refinements",
+            "step_4_description": "The garment evolves through fittings, ensuring flawless form and comfort.",
+            "step_4_image": "shopify://shop_images/ChatGPT_Image_Aug_28_2025_01_06_44_PM.png",
+            "step_4_content_title": "Shaping Elegance",
+            "step_4_content_text": "<p>From toile fittings to the final adjustment, every element is refined with care until the garment feels like a second skin - graceful, effortless, and sculpted for you.</p>",
+            "step_5_enabled": true,
+            "step_5_title": "The Final Masterpiece",
+            "step_5_description": "The journey culminates in more than couture - it becomes a statement of self.",
+            "step_5_image": "shopify://shop_images/ChatGPT_Image_Aug_28_2025_01_08_39_PM.png",
+            "step_5_content_title": "An Heirloom of You",
+            "step_5_content_text": "<p>What emerges is a masterpiece that transcends time - part heirloom, part expression, entirely <em>you</em>. Finished with the signature detailing of Achin Bindlish.</p>"
+          },
+          "blocks": {}
+        },
+        "button_Fif9dA": {
+          "type": "button",
+          "name": "t:names.button",
+          "settings": {
+            "label": "Book an Experience",
+            "link": "https://api.whatsapp.com/send/?phone=918287222999",
+            "open_in_new_tab": false,
+            "style_class": "button",
+            "width": "custom",
+            "custom_width": 43,
+            "width_mobile": "custom",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_a364fbc_4rjkPc",
+        "text_8YLqYV",
+        "ai_gen_block_e918e26_cPQ4Kj",
+        "button_Fif9dA"
+      ],
+      "name": "t:names.custom_section",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "center",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 17,
+        "section_width": "full-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_radius": 0,
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    }
+  },
+  "order": [
+    "main",
+    "section_QcgkNd"
+  ]
+}

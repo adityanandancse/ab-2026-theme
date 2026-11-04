@@ -1,0 +1,601 @@
+{% doc %}
+  @prompt
+    generate a clickable image marquee  containing all the aspect ratio including adapt to image. Should be highly responsive on all the devices should scroll in loop with all the customizations possible. it shouldn't go out of the body and display on any device size
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-image-marquee-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-image-marquee-container-{{ ai_gen_id }} {
+    display: flex;
+    animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+    gap: {{ block.settings.image_gap }}px;
+  }
+
+  .ai-image-marquee-{{ ai_gen_id }}:hover .ai-image-marquee-container-{{ ai_gen_id }} {
+    {% if block.settings.pause_on_hover %}
+      animation-play-state: paused;
+    {% endif %}
+  }
+
+  .ai-image-marquee-item-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius }}px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    {% case block.settings.aspect_ratio %}
+      {% when 'adapt' %}
+        width: auto;
+        height: {{ block.settings.image_height }}px;
+      {% when 'square' %}
+        width: {{ block.settings.image_height }}px;
+        height: {{ block.settings.image_height }}px;
+        aspect-ratio: 1 / 1;
+      {% when 'portrait' %}
+        width: calc({{ block.settings.image_height }}px * 0.75);
+        height: {{ block.settings.image_height }}px;
+        aspect-ratio: 3 / 4;
+      {% when 'landscape' %}
+        width: calc({{ block.settings.image_height }}px * 1.33);
+        height: {{ block.settings.image_height }}px;
+        aspect-ratio: 4 / 3;
+      {% when 'wide' %}
+        width: calc({{ block.settings.image_height }}px * 1.78);
+        height: {{ block.settings.image_height }}px;
+        aspect-ratio: 16 / 9;
+    {% endcase %}
+  }
+
+  .ai-image-marquee-item-{{ ai_gen_id }}:hover {
+    {% if block.settings.hover_effect == 'scale' %}
+      transform: scale(1.05);
+    {% elsif block.settings.hover_effect == 'lift' %}
+      transform: translateY(-5px);
+    {% endif %}
+  }
+
+  .ai-image-marquee-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    {% if block.settings.aspect_ratio == 'adapt' %}
+      object-fit: contain;
+    {% else %}
+      object-fit: cover;
+    {% endif %}
+    object-position: center;
+    display: block;
+  }
+
+  .ai-image-marquee-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-image-marquee-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-image-marquee-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - {{ block.settings.image_gap }}px));
+    }
+  }
+
+  {% if block.settings.scroll_direction == 'right' %}
+    .ai-image-marquee-container-{{ ai_gen_id }} {
+      animation-direction: reverse;
+    }
+  {% endif %}
+
+  @media screen and (max-width: 749px) {
+    .ai-image-marquee-item-{{ ai_gen_id }} {
+      {% case block.settings.aspect_ratio %}
+        {% when 'adapt' %}
+          height: {{ block.settings.image_height | times: 0.7 }}px;
+        {% when 'square' %}
+          width: {{ block.settings.image_height | times: 0.7 }}px;
+          height: {{ block.settings.image_height | times: 0.7 }}px;
+        {% when 'portrait' %}
+          width: calc({{ block.settings.image_height | times: 0.7 }}px * 0.75);
+          height: {{ block.settings.image_height | times: 0.7 }}px;{% when 'landscape' %}
+          width: calc({{ block.settings.image_height | times: 0.7 }}px * 1.33);
+          height: {{ block.settings.image_height | times: 0.7 }}px;
+        {% when 'wide' %}
+          width: calc({{ block.settings.image_height | times: 0.7 }}px * 1.78);
+          height: {{ block.settings.image_height | times: 0.7 }}px;
+      {% endcase %}
+    }
+
+    .ai-image-marquee-{{ ai_gen_id }} {
+      padding: {{ block.settings.section_padding | times: 0.7 }}px 0;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .ai-image-marquee-item-{{ ai_gen_id }} {
+      {% case block.settings.aspect_ratio %}
+        {% when 'adapt' %}
+          height: {{ block.settings.image_height | times: 0.5 }}px;
+        {% when 'square' %}
+          width: {{ block.settings.image_height | times: 0.5 }}px;
+          height: {{ block.settings.image_height | times: 0.5 }}px;
+        {% when 'portrait' %}
+          width: calc({{ block.settings.image_height | times: 0.5 }}px * 0.75);
+          height: {{ block.settings.image_height | times: 0.5 }}px;
+        {% when 'landscape' %}
+          width: calc({{ block.settings.image_height | times: 0.5 }}px * 1.33);
+          height: {{ block.settings.image_height | times: 0.5 }}px;
+        {% when 'wide' %}
+          width: calc({{ block.settings.image_height | times: 0.5 }}px * 1.78);
+          height: {{ block.settings.image_height | times: 0.5 }}px;
+      {% endcase %}
+    }
+  }
+{% endstyle %}
+ 
+<image-marquee-{{ ai_gen_id }}
+  class="ai-image-marquee-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+><div class="ai-image-marquee-container-{{ ai_gen_id }}">
+    {% for i in (1..10) %}
+      {% liquid
+        assign image_key = 'image_' | append: i
+        assign url_key = 'url_' | append: i
+        assign image = block.settings[image_key]
+        assign url = block.settings[url_key]
+      %}
+
+      {% if image != blank %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}">
+          {% if url != blank %}
+            <a href="{{ url }}" target="{{ block.settings.link_target }}">
+              <img
+                src="{{ image | image_url: width: 800 }}"
+                alt="{{ image.alt | escape }}"
+                class="ai-image-marquee-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+              >
+            </a>
+          {% else %}
+            <img
+              src="{{ image | image_url: width: 800 }}"
+              alt="{{ image.alt | escape }}"
+              class="ai-image-marquee-image-{{ ai_gen_id }}"
+              loading="lazy"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+            >
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    {% if block.settings.image_1 == blank and block.settings.image_2 == blank and block.settings.image_3 == blank %}
+      {% for i in (1..8) %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}">
+          <div class="ai-image-marquee-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+            <div class="ai-image-marquee-empty-state-{{ ai_gen_id }}">
+              Add image {{ i }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% for i in (1..10) %}
+      {% liquid
+        assign image_key = 'image_' | append: i
+        assign url_key = 'url_' | append: i
+        assign image = block.settings[image_key]
+        assign url = block.settings[url_key]
+      %}
+
+      {% if image != blank %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}">
+          {% if url != blank %}
+            <a href="{{ url }}" target="{{ block.settings.link_target }}">
+              <img
+                src="{{ image | image_url: width: 800 }}"
+                alt="{{ image.alt | escape }}"
+                class="ai-image-marquee-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+              >
+            </a>
+          {% else %}
+            <img
+              src="{{ image | image_url: width: 800 }}"
+              alt="{{ image.alt | escape }}"
+              class="ai-image-marquee-image-{{ ai_gen_id }}"
+              loading="lazy"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+            >
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</image-marquee-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ImageMarquee{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.container = this.querySelector('.ai-image-marquee-container-{{ ai_gen_id }}');
+        this.setupMarquee();
+        this.setupClickHandlers();
+      }
+
+      setupMarquee() {
+        const items = this.querySelectorAll('.ai-image-marquee-item-{{ ai_gen_id }}');
+        if (items.length === 0) return;
+
+        const containerWidth = this.container.scrollWidth / 2;
+        this.container.style.width = `${containerWidth *2}px`;}
+
+      setupClickHandlers() {
+        const items = this.querySelectorAll('.ai-image-marquee-item-{{ ai_gen_id }}');
+        
+        items.forEach((item) => {
+          const link = item.querySelector('a');
+          if (!link) {
+            item.addEventListener('click', (e) => {
+              e.preventDefault();});
+          }
+        });
+      }
+    }
+
+    customElements.define('image-marquee-{{ ai_gen_id }}', ImageMarquee{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Image marquee",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "square",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "wide",
+          "label": "Wide (16:9)"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "min": 100,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image height",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "image_gap",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between images",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll speed",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "scroll_direction",
+      "label": "Scroll direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "Hover effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "scale",
+          "label": "Scale"
+        },
+        {
+          "value": "lift",
+          "label": "Lift"
+        }
+      ],
+      "default": "scale"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Links"
+    },
+    {
+      "type": "select",
+      "id": "link_target",
+      "label": "Link target",
+      "options": [
+        {
+          "value": "_self",
+          "label": "Same window"
+        },
+        {
+          "value": "_blank",
+          "label": "New window"
+        }
+      ],
+      "default": "_self"
+    },
+    {
+      "type": "header",
+      "content": "Image1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_1",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_2",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_3",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_4",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_5",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_6",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_6",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 7"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_7",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_7",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 8"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_8",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_8",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 9"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_9",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_9",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Image 10"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_10",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_10",
+      "label": "Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image marquee"
+    }
+  ]
+}
+{% endschema %}

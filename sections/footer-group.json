@@ -1,0 +1,487 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "divider_bcbyyM": {
+      "type": "divider",
+      "name": "t:names.divider_section",
+      "settings": {
+        "background_color": "#281111",
+        "divider_color": "",
+        "section_width": "full-width",
+        "thickness": 1,
+        "corner_radius": "square",
+        "width_percent": 100,
+        "alignment_horizontal": "center",
+        "padding-block-start": 16,
+        "padding-block-end": 16
+      }
+    },
+    "section_Ei9yQP": {
+      "type": "section",
+      "blocks": {
+        "ai_gen_block_c0407fb_KhzyYT": {
+          "type": "ai_gen_block_c0407fb",
+          "settings": {
+            "main_icon": "shopify://shop_images/1_714b6a5b-bfa9-46a9-a43d-aab92b99c0f9.png",
+            "main_button_size": 48,
+            "main_icon_size": 40,
+            "main_button_radius": 40,
+            "main_button_color": "#8f0917",
+            "main_button_hover_color": "#3a0a0a",
+            "main_icon_color": "#fff6e4",
+            "bottom_position": 10,
+            "right_position": 10,
+            "sub_button_size": 40,
+            "sub_icon_size": 12,
+            "sub_button_radius": 24,
+            "sub_buttons_gap": 14,
+            "sub_button_color": "#fff6e4",
+            "sub_button_hover_color": "#ece7dd",
+            "sub_icon_color": "#3a0a0a",
+            "show_labels": true,
+            "label_font_size": 12,
+            "label_border_radius": 4,
+            "label_background_color": "#3a0a0a",
+            "label_text_color": "#fff6e4",
+            "show_backdrop": false,
+            "button_1_enabled": false,
+            "button_1_label": "Contact",
+            "button_1_link": "shopify://pages/contact",
+            "button_1_icon": "shopify://shop_images/1_714b6a5b-bfa9-46a9-a43d-aab92b99c0f9.png",
+            "button_2_enabled": true,
+            "button_2_label": "Appointment",
+            "button_2_link": "shopify://pages/contact",
+            "button_2_icon": "shopify://shop_images/3_1891a399-adcd-4463-bc74-69ae82c93b99.png",
+            "button_3_enabled": true,
+            "button_3_label": "Whatsapp",
+            "button_3_link": "https://api.whatsapp.com/send/?phone=918287222999&text&type=phone_number&app_absent=0",
+            "button_3_icon": "shopify://shop_images/2_2e077a99-a63f-432a-8f3e-3d5fe6fac261.png",
+            "mobile_bottom_position": 10,
+            "mobile_right_position": 10,
+            "mobile_main_button_size": 40,
+            "mobile_main_icon_size": 16,
+            "mobile_sub_button_size": 32,
+            "mobile_sub_icon_size": 12
+          },
+          "blocks": {}
+        },
+        "menu_eMPAPD": {
+          "type": "menu",
+          "name": "t:names.menu",
+          "settings": {
+            "menu": "main-menu-copy",
+            "heading": "Menu",
+            "menu_spacing": 8,
+            "show_as_accordion": true,
+            "accordion_icon": "caret",
+            "accordion_dividers": false,
+            "background_color": "",
+            "text_color": "#c9a250",
+            "heading_preset": "h6",
+            "link_preset": "paragraph",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "menu_maecVU": {
+          "type": "menu",
+          "name": "t:names.menu",
+          "settings": {
+            "menu": "user",
+            "heading": "Account",
+            "menu_spacing": 8,
+            "show_as_accordion": true,
+            "accordion_icon": "caret",
+            "accordion_dividers": false,
+            "background_color": "",
+            "text_color": "#c9a250",
+            "heading_preset": "h6",
+            "link_preset": "paragraph",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "menu_QgYia9": {
+          "type": "menu",
+          "name": "t:names.menu",
+          "settings": {
+            "menu": "footer",
+            "heading": "Contact",
+            "menu_spacing": 8,
+            "show_as_accordion": true,
+            "accordion_icon": "caret",
+            "accordion_dividers": false,
+            "background_color": "",
+            "text_color": "#c9a250",
+            "heading_preset": "h6",
+            "link_preset": "paragraph",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 100,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_c0407fb_KhzyYT",
+        "menu_eMPAPD",
+        "menu_maecVU",
+        "menu_QgYia9"
+      ],
+      "name": "t:names.custom_section",
+      "settings": {
+        "content_direction": "row",
+        "vertical_on_mobile": false,
+        "horizontal_alignment": "space-between",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "#281111",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
+    "divider_Fp8gxb": {
+      "type": "divider",
+      "name": "t:names.divider_section",
+      "settings": {
+        "background_color": "#281111",
+        "divider_color": "",
+        "section_width": "full-width",
+        "thickness": 1,
+        "corner_radius": "square",
+        "width_percent": 100,
+        "alignment_horizontal": "center",
+        "padding-block-start": 16,
+        "padding-block-end": 16
+      }
+    },
+    "migrated_footer_content": {
+      "type": "section",
+      "blocks": {
+        "group_tbFfTQ": {
+          "type": "group",
+          "name": "Email signup",
+          "disabled": true,
+          "settings": {
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "space-between",
+            "vertical_alignment": "flex-end",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 5,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "custom",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "group_4aCyy7": {
+              "type": "group",
+              "name": "Content",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "center",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "center",
+                "gap": 12,
+                "width": "fit-content",
+                "custom_width": 100,
+                "width_mobile": "fill",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "background_media": "none",
+                "background_color": "",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "text_3L9Fjq": {
+                  "type": "text",
+                  "name": "Heading",
+                  "settings": {
+                    "text": "<p>LETTERS FROM D-49</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "h4",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "text_eC4rXd": {
+                  "type": "text",
+                  "name": "Text",
+                  "settings": {
+                    "text": "<p>New collections, atelier openings, and the occasional look behind the frame. Nothing else.</p>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "text_3L9Fjq",
+                "text_eC4rXd"
+              ]
+            },
+            "email_signup_NcLwNb": {
+              "type": "email-signup",
+              "name": "Email input",
+              "settings": {
+                "width": "custom",
+                "custom_width": 50,
+                "heading": "",
+                "heading_text_color": "",
+                "heading_preset": "h3",
+                "border_style": "underline",
+                "input_style": "default",
+                "border_width": 1,
+                "border_radius": 0,
+                "input_background_color": "",
+                "input_text_color": "",
+                "input_border_color": "",
+                "input_type_preset": "paragraph",
+                "style_class": "button-unstyled",
+                "custom_button_background": "{{ settings.color_palette.foreground }}",
+                "custom_button_text": "{{ settings.color_palette.background }}",
+                "custom_button_border": "{{ settings.color_palette.background }}",
+                "link_text_color": "",
+                "display_type": "arrow",
+                "label": "Sign up",
+                "integrated_button": true,
+                "button_type_preset": "paragraph",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "footer_policy_list_P3bcnC": {
+              "type": "footer-policy-list",
+              "name": "t:names.policy_list",
+              "disabled": true,
+              "settings": {
+                "text_color": "",
+                "font_size": "0.75rem",
+                "case": "none"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "group_4aCyy7",
+            "email_signup_NcLwNb",
+            "footer_policy_list_P3bcnC"
+          ]
+        }
+      },
+      "block_order": [
+        "group_tbFfTQ"
+      ],
+      "disabled": true,
+      "name": "Footer",
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "center",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 14,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "background_media": "none",
+        "background_color": "#ece7dd",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_color": "",
+        "border_radius": 0,
+        "padding-block-start": 40,
+        "padding-block-end": 30
+      }
+    },
+    "footer_utilities": {
+      "type": "footer-utilities",
+      "blocks": {
+        "block_b83cda285679": {
+          "type": "footer-copyright",
+          "settings": {
+            "show_powered_by": false,
+            "text_color": "#e7ce93",
+            "font_size": "0.75rem",
+            "case": "none"
+          },
+          "blocks": {}
+        },
+        "block_93b9c4ee33cf": {
+          "type": "footer-policy-list",
+          "settings": {
+            "text_color": "#e7ce93",
+            "font_size": "0.75rem",
+            "case": "none"
+          },
+          "blocks": {}
+        },
+        "block_ba1ab1bcb865": {
+          "type": "social-links",
+          "settings": {
+            "icon_color": "",
+            "facebook_url": "https://www.facebook.com/people/Achin-Bindlish/100091655574339/",
+            "instagram_url": "https://www.instagram.com/achinbindlishofficial/",
+            "youtube_url": "",
+            "tiktok_url": "",
+            "twitter_url": "https://x.com/AchinBindlish",
+            "threads_url": "",
+            "linkedin_url": "",
+            "bluesky_url": "",
+            "snapchat_url": "",
+            "pinterest_url": "https://in.pinterest.com/achinbindlishofficial/",
+            "tumblr_url": "",
+            "vimeo_url": "",
+            "custom_url": ""
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "block_b83cda285679",
+        "block_93b9c4ee33cf",
+        "block_ba1ab1bcb865"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "gap": 24,
+        "background_color": "#281111",
+        "divider_thickness": 1,
+        "divider_color": "",
+        "padding-block-start": 20,
+        "padding-block-end": 20
+      }
+    }
+  },
+  "order": [
+    "divider_bcbyyM",
+    "section_Ei9yQP",
+    "divider_Fp8gxb",
+    "migrated_footer_content",
+    "footer_utilities"
+  ]
+}

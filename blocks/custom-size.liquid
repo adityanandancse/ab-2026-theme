@@ -1,0 +1,962 @@
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .custom-size-selector-{{ ai_gen_id }} {
+    margin-top: 20px;
+  }
+
+  .custom-size-option-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;cursor: pointer;
+    padding: 10px;
+    border: 2px solid transparent;
+    border-radius: {{ block.settings.option_border_radius }}px;
+    transition: all 0.3s ease;
+  }
+
+  .custom-size-option-{{ ai_gen_id }}.selected {
+    border-color: {{ block.settings.selected_border_color }};
+    background-color: {{ block.settings.selected_background_color }};
+  }
+
+  .custom-size-option-{{ ai_gen_id }} input {
+    margin-right: 8px;
+  }
+
+  .custom-size-measurements-display-{{ ai_gen_id }} {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: {{ block.settings.measurements_display_bg }};
+    border-radius: {{ block.settings.border_radius }}px;
+    font-size: 14px;
+    color: {{ block.settings.text_color }};
+    display: none;
+  }
+
+  .custom-size-measurements-display-{{ ai_gen_id }}.show {
+    display: block;
+  }
+
+  .custom-size-measurement-item-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .custom-size-measurement-item-{{ ai_gen_id }}:last-child {
+    margin-bottom: 0;
+  }
+
+  .custom-size-edit-button-{{ ai_gen_id }} {
+    background: none;
+    border: none;
+    color: {{ block.settings.edit_button_color }};
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+
+  .custom-size-modal-{{ ai_gen_id }} {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .custom-size-modal-content-{{ ai_gen_id }} {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: {{ block.settings.border_radius }}px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .custom-size-modal-close-{{ ai_gen_id }} {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .custom-size-form-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .custom-size-form-title-{{ ai_gen_id }} {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: {{ block.settings.title_color }};
+  }
+
+  .custom-size-form-description-{{ ai_gen_id }} {
+    margin-bottom: 20px;
+    color: {{ block.settings.text_color }};
+  }
+
+  .custom-size-form-field-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .custom-size-form-field-{{ ai_gen_id }} label {
+    font-weight: 500;
+    color: {{ block.settings.text_color }};
+  }
+
+  .custom-size-form-field-{{ ai_gen_id }} input {
+    padding: 10px;
+    border: 1px solid {{ block.settings.input_border_color }};
+    border-radius: {{ block.settings.input_border_radius }}px;
+  }
+
+  .custom-size-form-field-{{ ai_gen_id }} .field-note {
+    font-size: 12px;
+    color: {{ block.settings.note_color }};
+  }
+
+  .custom-size-form-buttons-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .custom-size-form-button-{{ ai_gen_id }} {
+    padding: 12px 20px;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    border: none;
+  }
+
+  .custom-size-form-cancel-{{ ai_gen_id }} {
+    background-color: {{ block.settings.cancel_button_color }};
+    color: {{ block.settings.cancel_button_text_color }};
+  }
+
+  .custom-size-form-save-{{ ai_gen_id }} {
+    background-color: {{ block.settings.save_button_color }};
+    color: {{ block.settings.save_button_text_color }};
+  }
+
+  .custom-size-badge-{{ ai_gen_id }} {
+    display: inline-block;
+    background-color: {{ block.settings.badge_color }};
+    color: {{ block.settings.badge_text_color }};
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+
+  .variant-selector-disabled-{{ ai_gen_id }} {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .custom-size-modal-content-{{ ai_gen_id }} {
+      padding: 20px;
+      width: 95%;
+    }
+  }
+{% endstyle %}
+
+<custom-size-selector-{{ ai_gen_id }}
+  class="custom-size-selector-{{ ai_gen_id }}"
+  data-size-variant-name="{{ block.settings.size_variant_name }}"
+  data-custom-size-label="{{ block.settings.custom_size_label }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="custom-size-option-{{ ai_gen_id }}">
+    <input 
+      type="radio" 
+      id="custom-size-radio-{{ ai_gen_id }}" 
+      name="size-selection-{{ ai_gen_id }}" 
+      value="custom"
+      class="custom-size-radio-{{ ai_gen_id }}"
+    >
+    <label for="custom-size-radio-{{ ai_gen_id }}">{{ block.settings.custom_size_label }}</label>
+  </div>
+
+  <div class="custom-size-measurements-display-{{ ai_gen_id }}">
+    <div class="custom-size-measurements-list-{{ ai_gen_id }}"></div>
+    <button type="button" class="custom-size-edit-button-{{ ai_gen_id }}">Edit measurements</button>
+  </div>
+
+  <div class="custom-size-modal-{{ ai_gen_id }}">
+    <div class="custom-size-modal-content-{{ ai_gen_id }}">
+      <button class="custom-size-modal-close-{{ ai_gen_id }}" aria-label="Close">✕</button>
+      
+      <div class="custom-size-form-{{ ai_gen_id }}">
+        <div class="custom-size-form-title-{{ ai_gen_id }}">{{ block.settings.form_title }}</div>
+        <div class="custom-size-form-description-{{ ai_gen_id }}">{{ block.settings.form_description }}</div>
+        
+        <!-- Shoulder -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-shoulder-{{ ai_gen_id }}">Shoulder</label>
+          <input 
+            type="text" 
+            id="custom-size-shoulder-{{ ai_gen_id }}" 
+            name="Shoulder" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure across the back from shoulder to shoulder</div>
+        </div>
+        
+        <!-- Upper Bust -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-upper-bust-{{ ai_gen_id }}">Upper Bust</label>
+          <input 
+            type="text" 
+            id="custom-size-upper-bust-{{ ai_gen_id }}" 
+            name="Upper Bust" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the body above the bust</div>
+        </div>
+        
+        <!-- Bust -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-bust-{{ ai_gen_id }}">Bust</label>
+          <input 
+            type="text" 
+            id="custom-size-bust-{{ ai_gen_id }}" 
+            name="Bust" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the fullest part of your bust</div>
+        </div>
+        
+        <!-- Under Bust -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-under-bust-{{ ai_gen_id }}">Under Bust</label>
+          <input 
+            type="text" 
+            id="custom-size-under-bust-{{ ai_gen_id }}" 
+            name="Under Bust" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around your torso directly under the bust</div>
+        </div>
+        
+        <!-- Armhole -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-armhole-{{ ai_gen_id }}">Armhole</label>
+          <input 
+            type="text" 
+            id="custom-size-armhole-{{ ai_gen_id }}" 
+            name="Armhole" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from shoulder joint to armpit</div>
+        </div>
+        
+        <!-- Sleeve Length -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-sleeve-length-{{ ai_gen_id }}">Sleeve Length</label>
+          <input 
+            type="text" 
+            id="custom-size-sleeve-length-{{ ai_gen_id }}" 
+            name="Sleeve Length" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from shoulder to wrist</div>
+        </div>
+        
+        <!-- Bicep -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-bicep-{{ ai_gen_id }}">Bicep</label>
+          <input 
+            type="text" 
+            id="custom-size-bicep-{{ ai_gen_id }}" 
+            name="Bicep" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the fullest part of your upper arm</div>
+        </div>
+        
+        <!-- Elbow -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-elbow-{{ ai_gen_id }}">Elbow</label>
+          <input 
+            type="text" 
+            id="custom-size-elbow-{{ ai_gen_id }}" 
+            name="Elbow" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around your elbow with arm slightly bent</div>
+        </div>
+        
+        <!-- Waist -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-waist-{{ ai_gen_id }}">Waist</label>
+          <input 
+            type="text" 
+            id="custom-size-waist-{{ ai_gen_id }}" 
+            name="Waist" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around your natural waistline</div>
+        </div>
+        
+        <!-- Low Waist -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-low-waist-{{ ai_gen_id }}">Low Waist</label>
+          <input 
+            type="text" 
+            id="custom-size-low-waist-{{ ai_gen_id }}" 
+            name="Low Waist" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the body where you typically wear low-rise pants</div>
+        </div>
+        
+        <!-- Hip -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-hip-{{ ai_gen_id }}">Hip</label>
+          <input 
+            type="text" 
+            id="custom-size-hip-{{ ai_gen_id }}" 
+            name="Hip" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the fullest part of your hips</div>
+        </div>
+        
+        <!-- Dress Length -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-dress-length-{{ ai_gen_id }}">Dress Length</label>
+          <input 
+            type="text" 
+            id="custom-size-dress-length-{{ ai_gen_id }}" 
+            name="Dress Length" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from shoulder to desired dress length</div>
+        </div>
+        
+        <!-- Bottom Length (with heels) -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-bottom-length-{{ ai_gen_id }}">Bottom Length (with heels)</label>
+          <input 
+            type="text" 
+            id="custom-size-bottom-length-{{ ai_gen_id }}" 
+            name="Bottom Length (with heels)" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from waist to floor with heels on</div>
+        </div>
+        
+        <!-- Kurta Length (with heels) -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-kurta-length-{{ ai_gen_id }}">Kurta Length (with heels)</label>
+          <input 
+            type="text" 
+            id="custom-size-kurta-length-{{ ai_gen_id }}" 
+            name="Kurta Length (with heels)" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from shoulder to desired kurta length with heels on</div>
+        </div>
+        
+        <!-- Crotch Length -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-crotch-length-{{ ai_gen_id }}">Crotch Length</label>
+          <input 
+            type="text" 
+            id="custom-size-crotch-length-{{ ai_gen_id }}" 
+            name="Crotch Length" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure from waist through legs to back waist</div>
+        </div>
+        
+        <!-- Thigh Circumference -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-thigh-{{ ai_gen_id }}">Thigh Circumference</label>
+          <input 
+            type="text" 
+            id="custom-size-thigh-{{ ai_gen_id }}" 
+            name="Thigh Circumference" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the fullest part of your thigh</div>
+        </div>
+        
+        <!-- Knee Circumference -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-knee-{{ ai_gen_id }}">Knee Circumference</label>
+          <input 
+            type="text" 
+            id="custom-size-knee-{{ ai_gen_id }}" 
+            name="Knee Circumference" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around your knee with leg slightly bent</div>
+        </div>
+        
+        <!-- Calf Circumference -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-calf-{{ ai_gen_id }}">Calf Circumference</label>
+          <input 
+            type="text" 
+            id="custom-size-calf-{{ ai_gen_id }}" 
+            name="Calf Circumference" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around the fullest part of your calf</div>
+        </div>
+        
+        <!-- Ankle Circumference -->
+        <div class="custom-size-form-field-{{ ai_gen_id }}">
+          <label for="custom-size-ankle-{{ ai_gen_id }}">Ankle Circumference</label>
+          <input 
+            type="text" 
+            id="custom-size-ankle-{{ ai_gen_id }}" 
+            name="Ankle Circumference" 
+            placeholder="{{ block.settings.measurement_unit }}"
+          >
+          <div class="field-note">Measure around your ankle</div>
+        </div>
+        
+        <div class="custom-size-form-buttons-{{ ai_gen_id }}">
+          <button type="button" class="custom-size-form-button-{{ ai_gen_id }} custom-size-form-cancel-{{ ai_gen_id }}">{{ block.settings.cancel_button_text }}</button>
+          <button type="button" class="custom-size-form-button-{{ ai_gen_id }} custom-size-form-save-{{ ai_gen_id }}">{{ block.settings.save_button_text }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</custom-size-selector-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class CustomSizeSelector extends HTMLElement {
+      constructor() {
+        super();
+        this.sizeVariantName = this.dataset.sizeVariantName;
+        this.customSizeLabel = this.dataset.customSizeLabel;
+        this.radio = this.querySelector('.custom-size-radio-{{ ai_gen_id }}');
+        this.modal = this.querySelector('.custom-size-modal-{{ ai_gen_id }}');
+        this.closeButton = this.querySelector('.custom-size-modal-close-{{ ai_gen_id }}');
+        this.cancelButton = this.querySelector('.custom-size-form-cancel-{{ ai_gen_id }}');
+        this.saveButton = this.querySelector('.custom-size-form-save-{{ ai_gen_id }}');
+        this.editButton = this.querySelector('.custom-size-edit-button-{{ ai_gen_id }}');
+        this.formFields = this.querySelectorAll('.custom-size-form-field-{{ ai_gen_id }} input');
+        this.measurementsDisplay = this.querySelector('.custom-size-measurements-display-{{ ai_gen_id }}');
+        this.measurementsList = this.querySelector('.custom-size-measurements-list-{{ ai_gen_id }}');
+        this.optionContainer = this.querySelector('.custom-size-option-{{ ai_gen_id }}');
+        this.localStorageKey = 'customSizeMeasurements';
+        this.variantSelectors = null;
+        this.hasCustomSize = false;
+        this.savedMeasurements = null;
+        this.addToCartForm = null;
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+        this.loadSavedMeasurements();
+        
+        setTimeout(() => {
+          this.initializeVariantSelectors();
+          this.findAddToCartForm();
+          this.restoreSelection();
+        }, 300);
+      }
+
+      setupEventListeners() {
+        this.radio.addEventListener('change', () => {
+          if (this.radio.checked) {
+            this.selectCustomSize();
+          }
+        });
+
+        this.editButton.addEventListener('click', () => {
+          this.openModal();
+        });
+
+        this.closeButton.addEventListener('click', () => {
+          this.closeModal();
+        });
+
+        this.cancelButton.addEventListener('click', () => {
+          this.closeModal();
+        });
+
+        this.saveButton.addEventListener('click', () => {
+          this.saveCustomSize();
+          this.closeModal();
+        });
+
+        this.modal.addEventListener('click', (event) => {
+          if (event.target === this.modal) {
+            this.closeModal();
+          }
+        });
+
+        document.addEventListener('click', (event) => {
+          if (event.target.matches('button[type="submit"][name="add"]') || 
+              event.target.closest('button[type="submit"][name="add"]')) {
+            if (this.radio.checked && this.hasCustomSize) {
+              this.injectHiddenInputs();
+            }
+          }
+        });
+      }
+
+      findAddToCartForm() {
+        this.addToCartForm = document.querySelector('form[action*="/cart/add"]');
+      }
+
+      initializeVariantSelectors() {
+        const radioSelectors = document.querySelectorAll('input[type="radio"][name="options[' + this.sizeVariantName + ']"]');
+        const dropdownSelector = document.querySelector('select[name="options[' + this.sizeVariantName + ']"]');
+        
+        if (radioSelectors.length > 0) {
+          this.variantSelectors = radioSelectors;
+          this.setupRadioSelectors();
+        } else if (dropdownSelector) {
+          this.variantSelectors = dropdownSelector;
+          this.setupDropdownSelector();
+        }
+      }
+
+      setupRadioSelectors() {
+        this.variantSelectors.forEach(radio => {
+          radio.addEventListener('change', () => {
+            if (radio.checked) {
+              this.deselectCustomSize();
+            }
+          });
+        });
+      }
+
+      setupDropdownSelector() {
+        this.variantSelectors.addEventListener('change', () => {
+          if (this.variantSelectors.value && this.variantSelectors.value !== '') {
+            this.deselectCustomSize();
+          }
+        });
+      }
+
+      selectCustomSize() {
+        this.clearVariantSelections();
+        this.disableVariantSelectors();
+        
+        if (this.savedMeasurements && Object.keys(this.savedMeasurements).length > 0) {
+          this.showMeasurementsDisplay();
+          this.hasCustomSize = true;
+          this.optionContainer.classList.add('selected');
+        } else {
+          this.openModal();
+        }
+      }
+
+      deselectCustomSize() {
+        this.radio.checked = false;
+        this.hasCustomSize = false;
+        this.hideMeasurementsDisplay();
+        this.enableVariantSelectors();
+        this.optionContainer.classList.remove('selected');
+        this.removeHiddenInputs();
+      }
+
+      clearVariantSelections() {
+        if (this.variantSelectors) {
+          if (this.variantSelectors instanceof NodeList) {
+            this.variantSelectors.forEach(radio => {
+              radio.checked = false;
+            });
+          } else {
+            this.variantSelectors.value = '';
+          }
+        }
+      }
+
+      disableVariantSelectors() {
+        if (this.variantSelectors) {
+          if (this.variantSelectors instanceof NodeList) {
+            this.variantSelectors.forEach(radio => {
+              radio.closest('.variant-selector, .product-form__input, fieldset')?.classList.add('variant-selector-disabled-{{ ai_gen_id }}');
+            });
+          } else {
+            this.variantSelectors.closest('.variant-selector, .product-form__input, .select')?.classList.add('variant-selector-disabled-{{ ai_gen_id }}');
+          }
+        }
+      }
+
+      enableVariantSelectors() {
+        if (this.variantSelectors) {
+          if (this.variantSelectors instanceof NodeList) {
+            this.variantSelectors.forEach(radio => {
+              radio.closest('.variant-selector, .product-form__input, fieldset')?.classList.remove('variant-selector-disabled-{{ ai_gen_id }}');
+            });
+          } else {
+            this.variantSelectors.closest('.variant-selector, .product-form__input, .select')?.classList.remove('variant-selector-disabled-{{ ai_gen_id }}');
+          }
+        }
+      }
+
+      openModal() {
+        this.modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        if (this.savedMeasurements) {
+          this.formFields.forEach(field => {
+            const value = this.savedMeasurements[field.name];
+            if (value) {
+              field.value = value;
+            }
+          });
+        }
+      }
+
+      closeModal() {
+        this.modal.style.display = 'none';
+        document.body.style.overflow = '';
+        
+        if (!this.hasCustomSize) {
+          this.radio.checked = false;
+          this.enableVariantSelectors();
+        }
+      }
+
+      saveCustomSize() {
+        const measurements = {};
+        let hasValues = false;
+        
+        this.formFields.forEach(field => {
+          if (field.value.trim()) {
+            measurements[field.name] = field.value.trim();
+            hasValues = true;
+          }
+        });
+        
+        if (hasValues) {
+          this.hasCustomSize = true;
+          this.savedMeasurements = measurements;
+          localStorage.setItem(this.localStorageKey, JSON.stringify(measurements));
+          this.radio.checked = true;
+          this.showMeasurementsDisplay();
+          this.optionContainer.classList.add('selected');
+          this.disableVariantSelectors();
+          
+          // Inject hidden inputs immediately after saving
+          this.injectHiddenInputs();
+        } else {
+          this.deselectCustomSize();
+        }
+      }
+
+      showMeasurementsDisplay() {
+        if (!this.savedMeasurements) return;
+        
+        this.measurementsList.innerHTML = '';
+        
+        Object.entries(this.savedMeasurements).forEach(([key, value]) => {
+          if (value) {
+            const item = document.createElement('div');
+            item.className = 'custom-size-measurement-item-{{ ai_gen_id }}';
+            item.innerHTML = `
+              <span>${key}:</span>
+              <span>${value} {{ block.settings.measurement_unit }}</span>
+            `;
+            this.measurementsList.appendChild(item);
+          }
+        });
+        
+        this.measurementsDisplay.classList.add('show');
+      }
+
+      hideMeasurementsDisplay() {
+        this.measurementsDisplay.classList.remove('show');
+      }
+
+      loadSavedMeasurements() {
+        const saved = localStorage.getItem(this.localStorageKey);
+        if (saved) {
+          try {
+            this.savedMeasurements = JSON.parse(saved);
+          } catch (e) {
+            console.error('Error parsing saved measurements:', e);
+            this.savedMeasurements = null;
+          }
+        }
+      }
+
+      restoreSelection() {
+        const savedSelection = localStorage.getItem('customSizeSelection');
+        if (savedSelection === 'custom' && this.savedMeasurements && Object.keys(this.savedMeasurements).length > 0) {
+          this.radio.checked = true;
+          this.selectCustomSize();
+          
+          // Inject hidden inputs on page load if custom size was previously selected
+          this.injectHiddenInputs();
+        }
+      }
+
+      injectHiddenInputs() {
+        if (!this.savedMeasurements || !this.addToCartForm) return;
+        
+        // First remove any existing inputs
+        this.removeHiddenInputs();
+        
+        // Create a flag input to indicate custom size is selected
+        const customSizeFlag = document.createElement('input');
+        customSizeFlag.type = 'hidden';
+        customSizeFlag.name = 'properties[_Custom Size]';
+        customSizeFlag.value = 'Yes';
+        customSizeFlag.className = 'custom-size-property-{{ ai_gen_id }}';
+        this.addToCartForm.appendChild(customSizeFlag);
+        
+        // Create inputs for each measurement
+        Object.entries(this.savedMeasurements).forEach(([key, value]) => {
+          if (value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `properties[${key}]`;
+            input.value = value + ' {{ block.settings.measurement_unit }}';
+            input.className = 'custom-size-property-{{ ai_gen_id }}';
+            this.addToCartForm.appendChild(input);
+          }
+        });
+        
+        localStorage.setItem('customSizeSelection', 'custom');
+      }
+
+      removeHiddenInputs() {
+        if (!this.addToCartForm) return;
+        
+        const existingInputs = this.addToCartForm.querySelectorAll('.custom-size-property-{{ ai_gen_id }}');
+        existingInputs.forEach(input => input.remove());
+        
+        localStorage.removeItem('customSizeSelection');
+      }
+    }
+
+    customElements.define('custom-size-selector-{{ ai_gen_id }}', CustomSizeSelector);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Custom Size Selector",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Size Variant Settings"
+    },
+    {
+      "type": "text",
+      "id": "size_variant_name",
+      "label": "Size variant name",
+      "default": "Size",
+      "info": "Enter the exact name of your size variant (e.g. Size, Sizes)"
+    },
+    {
+      "type": "text",
+      "id": "custom_size_label",
+      "label": "Custom size option label",
+      "default": "I need a custom size"
+    },
+    {
+      "type": "header",
+      "content": "Form Settings"
+    },
+    {
+      "type": "text",
+      "id": "form_title",
+      "label": "Form title",
+      "default": "Enter Your Measurements"
+    },
+    {
+      "type": "textarea",
+      "id": "form_description",
+      "label": "Form description",
+      "default": "Please provide your measurements accurately. These details will be used to create your custom-sized item."
+    },
+    {
+      "type": "text",
+      "id": "measurement_unit",
+      "label": "Measurement unit",
+      "default": "cm",
+      "info": "This will be shown as a placeholder in measurement fields"
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "save_button_text",
+      "label": "Save button text",
+      "default": "Save Measurements"
+    },
+    {
+      "type": "text",
+      "id": "cancel_button_text",
+      "label": "Cancel button text",
+      "default": "Cancel"
+    },
+    {
+      "type": "header",
+      "content": "Style Settings"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "note_color",
+      "label": "Note text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "input_border_color",
+      "label": "Input border color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "save_button_color",
+      "label": "Save button color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "save_button_text_color",
+      "label": "Save button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "cancel_button_color",
+      "label": "Cancel button color",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "cancel_button_text_color",
+      "label": "Cancel button text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge background color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "selected_border_color",
+      "label": "Selected option border color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "selected_background_color",
+      "label": "Selected option background color",
+      "default": "#f0f4ff"
+    },
+    {
+      "type": "color",
+      "id": "measurements_display_bg",
+      "label": "Measurements display background",
+      "default": "#f8f9fa"
+    },
+    {
+      "type": "color",
+      "id": "edit_button_color",
+      "label": "Edit button color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Modal border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "option_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Option border radius",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "input_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Input border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Size Selector"
+    }
+  ]
+}
+{% endschema %}

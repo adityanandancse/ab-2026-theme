@@ -1,0 +1,680 @@
+{% doc %}
+  @prompt
+    Add a custom float icon when click it should show 2-3 Icons. I will provide the icons. Give all the customizations possible
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-float-icon-container-{{ ai_gen_id }} {
+    position: fixed;
+    bottom: {{ block.settings.bottom_position }}px;
+    right: {{ block.settings.right_position }}px;
+    z-index: 9999;
+  }
+
+  .ai-float-main-button-{{ ai_gen_id }} {
+    width: {{ block.settings.main_button_size }}px;
+    height: {{ block.settings.main_button_size }}px;
+    border-radius: {{ block.settings.main_button_radius }}px;
+    background-color: {{ block.settings.main_button_color }};
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .ai-float-main-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.main_button_hover_color }};
+    transform: scale(1.1);
+  }
+
+  .ai-float-main-button-{{ ai_gen_id }} svg {
+    width: {{ block.settings.main_icon_size }}px;
+    height: {{ block.settings.main_icon_size }}px;
+    fill: {{ block.settings.main_icon_color }};
+    transition: transform 0.3s ease;
+  }
+
+  .ai-float-main-button-{{ ai_gen_id }}.active svg {
+    transform: rotate(45deg);
+  }
+
+  .ai-float-sub-buttons-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.sub_buttons_gap }}px;
+    margin-bottom: {{ block.settings.sub_buttons_gap }}px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+  }
+
+  .ai-float-sub-buttons-{{ ai_gen_id }}.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .ai-float-sub-button-{{ ai_gen_id }} {
+    width: {{ block.settings.sub_button_size }}px;
+    height: {{ block.settings.sub_button_size }}px;
+    border-radius: {{ block.settings.sub_button_radius }}px;
+    background-color: {{ block.settings.sub_button_color }};
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .ai-float-sub-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.sub_button_hover_color }};
+    transform: scale(1.1);
+  }
+
+  .ai-float-sub-button-{{ ai_gen_id }} svg {
+    width: {{ block.settings.sub_icon_size }}px;
+    height: {{ block.settings.sub_icon_size }}px;
+    fill: {{ block.settings.sub_icon_color }};
+  }
+
+  .ai-float-sub-button-label-{{ ai_gen_id }} {
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: {{ block.settings.label_background_color }};
+    color: {{ block.settings.label_text_color }};
+    padding: 6px 12px;
+    border-radius: {{ block.settings.label_border_radius }}px;
+    font-size: {{ block.settings.label_font_size }}px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  .ai-float-sub-button-{{ ai_gen_id }}:hover .ai-float-sub-button-label-{{ ai_gen_id }} {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .ai-float-backdrop-{{ ai_gen_id }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 9998;
+  }
+
+  .ai-float-backdrop-{{ ai_gen_id }}.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-float-icon-container-{{ ai_gen_id }} {
+      bottom: {{ block.settings.mobile_bottom_position }}px;
+      right: {{ block.settings.mobile_right_position }}px;
+    }
+
+    .ai-float-main-button-{{ ai_gen_id }} {
+      width: {{ block.settings.mobile_main_button_size }}px;
+      height: {{ block.settings.mobile_main_button_size }}px;}
+
+    .ai-float-main-button-{{ ai_gen_id }} svg {
+      width: {{ block.settings.mobile_main_icon_size }}px;
+      height: {{ block.settings.mobile_main_icon_size }}px;
+    }
+
+    .ai-float-sub-button-{{ ai_gen_id }} {
+      width: {{ block.settings.mobile_sub_button_size }}px;
+      height: {{ block.settings.mobile_sub_button_size }}px;
+    }
+
+    .ai-float-sub-button-{{ ai_gen_id }} svg {
+      width: {{ block.settings.mobile_sub_icon_size }}px;
+      height: {{ block.settings.mobile_sub_icon_size }}px;
+    }
+  }
+{% endstyle %}<float-icon-menu-{{ ai_gen_id }} class="ai-float-icon-container-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.show_backdrop %}
+    <div class="ai-float-backdrop-{{ ai_gen_id }}"></div>
+  {% endif %}
+
+  <div class="ai-float-sub-buttons-{{ ai_gen_id }}">
+    {% if block.settings.button_1_enabled and block.settings.button_1_link %}
+      <a
+        href="{{ block.settings.button_1_link }}"
+        class="ai-float-sub-button-{{ ai_gen_id }}"
+        {% if block.settings.button_1_link contains 'mailto:' or block.settings.button_1_link contains 'tel:' %}{% elsif block.settings.button_1_link contains 'http' %}target="_blank"
+          rel="noopener noreferrer"
+        {% endif %}
+      >
+        {% if block.settings.button_1_icon %}
+          <img
+            src="{{ block.settings.button_1_icon | image_url: width: 100}}"
+            alt="{{ block.settings.button_1_label | escape }}"
+            width="{{ block.settings.sub_icon_size }}"
+            height="{{ block.settings.sub_icon_size }}"
+          >
+        {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        {% endif %}
+        {% if block.settings.show_labels and block.settings.button_1_label != blank %}
+          <span class="ai-float-sub-button-label-{{ ai_gen_id }}">{{ block.settings.button_1_label }}</span>
+        {% endif %}
+      </a>
+    {% endif %}
+
+    {% if block.settings.button_2_enabled and block.settings.button_2_link %}
+      <a
+        href="{{ block.settings.button_2_link }}"
+        class="ai-float-sub-button-{{ ai_gen_id }}"
+        {% if block.settings.button_2_link contains 'mailto:' or block.settings.button_2_link contains 'tel:' %}
+        {% elsif block.settings.button_2_link contains 'http' %}
+          target="_blank"
+          rel="noopener noreferrer"
+        {% endif %}
+      >
+        {% if block.settings.button_2_icon %}
+          <img
+            src="{{ block.settings.button_2_icon | image_url: width: 100 }}"
+            alt="{{ block.settings.button_2_label | escape }}"
+            width="{{ block.settings.sub_icon_size }}"
+            height="{{ block.settings.sub_icon_size }}"
+          >
+        {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+          </svg>
+        {% endif %}
+        {% if block.settings.show_labels and block.settings.button_2_label != blank %}
+          <span class="ai-float-sub-button-label-{{ ai_gen_id }}">{{ block.settings.button_2_label }}</span>
+        {% endif %}
+      </a>
+    {% endif %}
+
+    {% if block.settings.button_3_enabled and block.settings.button_3_link %}
+      <a
+        href="{{ block.settings.button_3_link }}"
+        class="ai-float-sub-button-{{ ai_gen_id }}"
+        {% if block.settings.button_3_link contains 'mailto:' or block.settings.button_3_link contains 'tel:' %}
+        {% elsif block.settings.button_3_link contains 'http' %}
+          target="_blank"
+          rel="noopener noreferrer"
+        {% endif %}
+      >
+        {% if block.settings.button_3_icon %}
+          <img
+            src="{{ block.settings.button_3_icon | image_url: width: 100 }}"
+            alt="{{ block.settings.button_3_label | escape }}"
+            width="{{ block.settings.sub_icon_size }}"
+            height="{{ block.settings.sub_icon_size }}"
+          >
+        {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+        {% endif %}
+        {% if block.settings.show_labels and block.settings.button_3_label != blank %}
+          <span class="ai-float-sub-button-label-{{ ai_gen_id }}">{{ block.settings.button_3_label }}</span>
+        {% endif %}
+      </a>
+    {% endif %}
+  </div><button class="ai-float-main-button-{{ ai_gen_id }}" aria-label="Toggle menu" aria-expanded="false">
+    {% if block.settings.main_icon %}
+      <img
+        src="{{ block.settings.main_icon | image_url: width: 100 }}"
+        alt="Menu"
+        width="{{ block.settings.main_icon_size }}"
+        height="{{ block.settings.main_icon_size }}"
+      >
+    {% else %}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+    {% endif %}
+  </button>
+</float-icon-menu-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class FloatIconMenu{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.isOpen = false;
+      }
+
+      connectedCallback() {
+        this.mainButton = this.querySelector('.ai-float-main-button-{{ ai_gen_id }}');
+        this.subButtons = this.querySelector('.ai-float-sub-buttons-{{ ai_gen_id }}');
+        this.backdrop = this.querySelector('.ai-float-backdrop-{{ ai_gen_id }}');
+
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.mainButton.addEventListener('click', () => {
+          this.toggleMenu();
+        });
+
+        if (this.backdrop) {
+          this.backdrop.addEventListener('click', () => {
+            this.closeMenu();
+          });
+        }document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.isOpen) {
+            this.closeMenu();
+          }
+        });document.addEventListener('click', (e) => {
+          if (!this.contains(e.target) && this.isOpen) {
+            this.closeMenu();
+          }
+        });
+      }
+
+      toggleMenu() {
+        if (this.isOpen) {
+          this.closeMenu();
+        } else {
+          this.openMenu();
+        }
+      }
+
+      openMenu() {
+        this.isOpen = true;
+        this.mainButton.classList.add('active');
+        this.subButtons.classList.add('active');
+        this.mainButton.setAttribute('aria-expanded', 'true');
+        
+        if (this.backdrop) {
+          this.backdrop.classList.add('active');
+        }
+      }
+
+      closeMenu() {
+        this.isOpen = false;
+        this.mainButton.classList.remove('active');
+        this.subButtons.classList.remove('active');
+        this.mainButton.setAttribute('aria-expanded', 'false');
+        
+        if (this.backdrop) {
+          this.backdrop.classList.remove('active');
+        }
+      }
+    }
+
+    customElements.define('float-icon-menu-{{ ai_gen_id }}', FloatIconMenu{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Floating action menu",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Main button"
+    },
+    {
+      "type": "image_picker",
+      "id": "main_icon",
+      "label": "Main icon"
+    },
+    {
+      "type": "range",
+      "id": "main_button_size",
+      "min": 40,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Button size",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "main_icon_size",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "main_button_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 30
+    },
+    {
+      "type": "color",
+      "id": "main_button_color",
+      "label": "Background color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "main_button_hover_color",
+      "label": "Hover background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "main_icon_color",
+      "label": "Icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Position"
+    },
+    {
+      "type": "range",
+      "id": "bottom_position",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom position",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "right_position",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Right position",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Sub buttons"
+    },
+    {
+      "type": "range",
+      "id": "sub_button_size",
+      "min": 32,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "label": "Button size",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "sub_icon_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "sub_button_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "sub_buttons_gap",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between buttons",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "sub_button_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "sub_button_hover_color",
+      "label": "Hover background color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "sub_icon_color",
+      "label": "Icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Labels"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_labels",
+      "label": "Show labels on hover",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "label_font_size",
+      "min": 10,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "label_border_radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "color",
+      "id": "label_background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "label_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Backdrop"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_backdrop",
+      "label": "Show backdrop when open",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Button 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_1_enabled",
+      "label": "Enable button 1",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_1_label",
+      "label": "Label",
+      "default": "Contact"
+    },
+    {
+      "type": "url",
+      "id": "button_1_link",
+      "label": "Link"
+    },
+    {
+      "type": "image_picker",
+      "id": "button_1_icon",
+      "label": "Icon"
+    },
+    {
+      "type": "header",
+      "content": "Button 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_2_enabled",
+      "label": "Enable button 2",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "Label",
+      "default": "Email"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "Link"
+    },
+    {
+      "type": "image_picker",
+      "id": "button_2_icon",
+      "label": "Icon"
+    },
+    {
+      "type": "header",
+      "content": "Button 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_3_enabled",
+      "label": "Enable button 3",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_3_label",
+      "label": "Label",
+      "default": "Phone"
+    },
+    {
+      "type": "url",
+      "id": "button_3_link",
+      "label": "Link"
+    },
+    {
+      "type": "image_picker",
+      "id": "button_3_icon",
+      "label": "Icon"
+    },
+    {
+      "type": "header",
+      "content": "Mobile settings"
+    },
+    {
+      "type": "range",
+      "id": "mobile_bottom_position",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom position",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_right_position",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Right position",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_main_button_size",
+      "min": 40,
+      "max": 70,
+      "step": 5,
+      "unit": "px",
+      "label": "Main button size",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "mobile_main_icon_size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Main icon size",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_sub_button_size",
+      "min": 32,
+      "max": 56,
+      "step": 4,
+      "unit": "px",
+      "label": "Sub button size",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "mobile_sub_icon_size",
+      "min": 12,
+      "max": 28,
+      "step": 2,
+      "unit": "px",
+      "label": "Sub icon size",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Floating action menu"
+    }
+  ]
+}
+{% endschema %}

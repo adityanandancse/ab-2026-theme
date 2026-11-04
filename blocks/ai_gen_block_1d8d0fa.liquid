@@ -1,0 +1,473 @@
+{% doc %}
+  @prompt
+    A "Masonry" grid layout (uneven image sizes to look like an art gallery wall). When the user hovers over an image, the image darkens slightly, and white text appears detailing the garment type., Full gallery should be balanced
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-masonry-gallery-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-masonry-gallery__container-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-masonry-gallery__grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.gap }}px;
+    grid-auto-rows: {{ block.settings.row_height }}px;
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius }}px;
+    cursor: pointer;
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(1) {
+    grid-row: span {{ block.settings.item_1_height }};
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(2) {
+    grid-row: span {{ block.settings.item_2_height }};
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(3) {
+    grid-row: span {{ block.settings.item_3_height }};
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(4) {
+    grid-row: span {{ block.settings.item_4_height }};
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(5) {
+    grid-row: span {{ block.settings.item_5_height }};
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:nth-child(6) {
+    grid-row: span {{ block.settings.item_6_height }};
+  }
+
+  .ai-masonry-gallery__image-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .ai-masonry-gallery__image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.3s ease;
+  }
+
+  .ai-masonry-gallery__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-masonry-gallery__placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-masonry-gallery__overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, {{ block.settings.overlay_opacity }});
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .ai-masonry-gallery__item-{{ ai_gen_id }}:hover .ai-masonry-gallery__overlay-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-masonry-gallery__text-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.text_size }}px;
+    font-weight: 500;
+    text-align: center;
+    padding: 20px;
+    max-width: 90%;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-masonry-gallery__grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+      gap: {{ block.settings.gap_mobile }}px;
+    }
+
+    .ai-masonry-gallery__text-{{ ai_gen_id }} {
+      font-size: {{ block.settings.text_size | times: 0.85 }}px;
+    }
+  }
+{% endstyle %}
+
+<masonry-gallery-{{ ai_gen_id }} class="ai-masonry-gallery-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-masonry-gallery__container-{{ ai_gen_id }}">
+    <div class="ai-masonry-gallery__grid-{{ ai_gen_id }}">
+      {% for i in (1..6) %}
+        {% liquid
+          assign image_key = 'image_' | append: i
+          assign text_key = 'garment_text_' | append: i
+          assign image = block.settings[image_key]
+          assign text = block.settings[text_key]
+        %}
+        
+        <div class="ai-masonry-gallery__item-{{ ai_gen_id }}">
+          <div class="ai-masonry-gallery__image-wrapper-{{ ai_gen_id }}">
+            {% if image %}
+              <img
+                src="{{ image | image_url: width: 800 }}"
+                alt="{{ image.alt | escape }}"
+                class="ai-masonry-gallery__image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="800"
+                height="800"
+              >
+            {% else %}
+              <div class="ai-masonry-gallery__placeholder-{{ ai_gen_id }}">
+                {{ 'product-apparel-1' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+          
+          {% if text != blank %}
+            <div class="ai-masonry-gallery__overlay-{{ ai_gen_id }}">
+              <div class="ai-masonry-gallery__text-{{ ai_gen_id }}">
+                {{ text }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</masonry-gallery-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class MasonryGallery{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.items = this.querySelectorAll('.ai-masonry-gallery__item-{{ ai_gen_id }}');
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.items.forEach((item) => {
+          item.addEventListener('mouseenter', () => {
+            const image = item.querySelector('.ai-masonry-gallery__image-{{ ai_gen_id }}');
+            if (image) {
+              image.style.filter = 'brightness(0.7)';
+            }
+          });
+
+          item.addEventListener('mouseleave', () => {
+            const image = item.querySelector('.ai-masonry-gallery__image-{{ ai_gen_id }}');
+            if (image) {
+              image.style.filter = 'brightness(1)';
+            }
+          });
+        });
+      }
+    }
+
+    customElements.define('masonry-gallery-{{ ai_gen_id }}', MasonryGallery{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Masonry gallery",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between items",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Gap on mobile",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "row_height",
+      "label": "Row height",
+      "min": 50,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Section padding",
+      "min": 0,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Item heights"
+    },
+    {
+      "type": "range",
+      "id": "item_1_height",
+      "label": "Item 1 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "item_2_height",
+      "label": "Item 2 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "item_3_height",
+      "label": "Item 3 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "item_4_height",
+      "label": "Item 4 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "item_5_height",
+      "label": "Item 5 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "item_6_height",
+      "label": "Item 6 height",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Hover overlay"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.6
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Item 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_1",
+      "label": "Garment type",
+      "default": "Silk Blouse"
+    },
+    {
+      "type": "header",
+      "content": "Item 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_2",
+      "label": "Garment type",
+      "default": "Wool Coat"
+    },
+    {
+      "type": "header",
+      "content": "Item 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_3",
+      "label": "Garment type",
+      "default": "Linen Dress"
+    },
+    {
+      "type": "header",
+      "content": "Item 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_4",
+      "label": "Garment type",
+      "default": "Cotton Shirt"
+    },
+    {
+      "type": "header",
+      "content": "Item 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_5",
+      "label": "Garment type",
+      "default": "Denim Jacket"
+    },
+    {
+      "type": "header",
+      "content": "Item 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_6",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "garment_text_6",
+      "label": "Garment type",
+      "default": "Cashmere Sweater"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Masonry gallery"
+    }
+  ]
+}
+{% endschema %}

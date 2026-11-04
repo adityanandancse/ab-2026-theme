@@ -1,0 +1,425 @@
+{% doc %}
+  @prompt
+    how SKU
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-sku-display-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: {{ block.settings.spacing }}px;
+    padding: {{ block.settings.padding }}px;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    {% if block.settings.show_border %}
+      border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    {% endif %}
+  }
+
+  .ai-sku-display__label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.label_size }}px;
+    color: {{ block.settings.label_color }};
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .ai-sku-display__value-{{ ai_gen_id }} {
+    font-size: {{ block.settings.value_size }}px;
+    color: {{ block.settings.value_color }};
+    font-family: monospace;
+    margin: 0;
+    {% if block.settings.value_style == 'bold' %}
+      font-weight: 700;
+    {% elsif block.settings.value_style == 'italic' %}
+      font-style: italic;
+    {% endif %}
+  }
+
+  .ai-sku-display__copy-button-{{ ai_gen_id }} {
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ai-sku-display__copy-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+  }
+
+  .ai-sku-display__copy-button-{{ ai_gen_id }} svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ai-sku-display__empty-{{ ai_gen_id }} {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+  }
+
+  .ai-sku-display__toast-{{ ai_gen_id }} {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #333;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  .ai-sku-display__toast-{{ ai_gen_id }}.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+{% endstyle %}
+
+<sku-display-{{ ai_gen_id }}
+  class="ai-sku-display-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.show_label %}
+    <span class="ai-sku-display__label-{{ ai_gen_id }}">{{ block.settings.label_text }}</span>
+  {% endif %}
+
+  {% if product.selected_or_first_available_variant.sku != blank %}
+    <span class="ai-sku-display__value-{{ ai_gen_id }}">
+      {{ product.selected_or_first_available_variant.sku }}
+    </span>
+
+    {% if block.settings.show_copy_button %}
+      <button
+        class="ai-sku-display__copy-button-{{ ai_gen_id }}"
+        data-sku="{{ product.selected_or_first_available_variant.sku }}"
+        aria-label="Copy SKU"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        {{ block.settings.button_text }}
+      </button>
+    {% endif %}
+  {% else %}
+    <span class="ai-sku-display__empty-{{ ai_gen_id }}">{{ block.settings.empty_text }}</span>
+  {% endif %}
+
+  <div class="ai-sku-display__toast-{{ ai_gen_id }}">{{ block.settings.copy_success_message }}</div>
+</sku-display-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class SkuDisplay{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.copyButton = this.querySelector('.ai-sku-display__copy-button-{{ ai_gen_id }}');
+        this.toast = this.querySelector('.ai-sku-display__toast-{{ ai_gen_id }}');
+
+        if (this.copyButton) {
+          this.copyButton.addEventListener('click', this.handleCopy.bind(this));
+        }
+
+        document.addEventListener('variant:change', this.handleVariantChange.bind(this));
+      }
+
+      handleCopy() {
+        const sku = this.copyButton.getAttribute('data-sku');
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(sku).then(() => {
+            this.showToast();
+          }).catch(() => {
+            this.fallbackCopy(sku);
+          });
+        } else {
+          this.fallbackCopy(sku);
+        }
+      }
+
+      fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+          document.execCommand('copy');
+          this.showToast();
+        } catch (err) {
+          console.error('Failed to copy SKU');
+        }
+
+        document.body.removeChild(textArea);
+      }
+
+      showToast() {
+        this.toast.classList.add('active');
+
+        setTimeout(() => {
+          this.toast.classList.remove('active');
+        }, 2000);
+      }
+
+      handleVariantChange(event) {
+        if (!event.detail || !event.detail.variant) return;
+
+        const skuValue = this.querySelector('.ai-sku-display__value-{{ ai_gen_id }}');
+        const emptyState = this.querySelector('.ai-sku-display__empty-{{ ai_gen_id }}');
+        const newSku = event.detail.variant.sku;
+
+        if (newSku) {
+          if (skuValue) {
+            skuValue.textContent = newSku;
+          }
+          if (this.copyButton) {
+            this.copyButton.setAttribute('data-sku', newSku);
+          }
+          if (emptyState) {
+            emptyState.style.display = 'none';
+          }
+        } else {
+          if (skuValue) {
+            skuValue.style.display = 'none';
+          }
+          if (this.copyButton) {
+            this.copyButton.style.display = 'none';
+          }
+          if (emptyState) {
+            emptyState.style.display = 'inline';
+          }
+        }
+      }
+    }
+
+    customElements.define('sku-display-{{ ai_gen_id }}', SkuDisplay{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product SKU",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_label",
+      "label": "Show label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "label_text",
+      "label": "Label text",
+      "default": "SKU:"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Label size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "SKU value"
+    },
+    {
+      "type": "range",
+      "id": "value_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Value size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "value_color",
+      "label": "Value color",
+      "default": "#333333"
+    },
+    {
+      "type": "select",
+      "id": "value_style",
+      "label": "Value style",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "bold",
+          "label": "Bold"
+        },
+        {
+          "value": "italic",
+          "label": "Italic"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty state text",
+      "default": "No SKU available"
+    },
+    {
+      "type": "header",
+      "content": "Copy button"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_copy_button",
+      "label": "Show copy button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Copy"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Button hover background",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "copy_success_message",
+      "label": "Copy success message",
+      "default": "SKU copied to clipboard!"
+    },
+    {
+      "type": "header",
+      "content": "Container style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "spacing",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Spacing",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product SKU"
+    }
+  ]
+}
+{% endschema %}

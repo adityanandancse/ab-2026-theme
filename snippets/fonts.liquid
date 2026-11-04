@@ -1,0 +1,60 @@
+{%- comment -%}
+  Single-typeface system: Mulish, a contemporary variable sans (weights
+  200–1000), self-hosted from assets/. This replaces Playfair Display and
+  Lora entirely — see docs/decisions.md.
+
+  A uniform-stroke sans needs different treatment than the display serif it
+  replaces: the luxury signal moves onto weight, tracking and scale, set below.
+{%- endcomment -%}
+{% style %}
+  @font-face {
+    font-family: 'Mulish';
+    font-style: normal;
+    font-weight: 200 1000;
+    font-display: swap;
+    src:
+      url('{{ 'Mulish-Variable.woff2' | asset_url }}') format('woff2-variations'),
+      url('{{ 'Mulish-Variable.woff2' | asset_url }}') format('woff2');
+  }
+
+  :root {
+    /* Every font role points at Mulish with a system-sans fallback stack.
+       Overrides the settings-derived values in theme-styles-variables.liquid. */
+    --font-body--family: 'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-subheading--family: 'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-heading--family: 'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-accent--family: 'Mulish', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Headings 32px and above (h1 = 48, h2 = 40): light weight, tight tracking. */
+    --font-h1--weight: 300;
+    --font-h1--letter-spacing: -0.01em;
+    --font-h2--weight: 300;
+    --font-h2--letter-spacing: -0.01em;
+
+    /* Headings below 32px (h3 = 24, h4 = 20, h5 = 14, h6 = 12): regular, neutral. */
+    --font-h3--weight: 400;
+    --font-h3--letter-spacing: 0;
+    --font-h4--weight: 400;
+    --font-h4--letter-spacing: 0;
+    --font-h5--weight: 400;
+    --font-h5--letter-spacing: 0;
+    --font-h6--weight: 400;
+    --font-h6--letter-spacing: 0;
+
+    /* Body: regular weight, generous leading for the even sans texture. */
+    --font-paragraph--weight: 400;
+    --font-paragraph--line-height: 1.7;
+  }
+
+  /* Small or all-caps UI text — nav, buttons, labels: medium weight, open
+     tracking so a light sans reads as deliberate rather than thin. */
+  .button,
+  .button-secondary,
+  .button-custom,
+  .menu-list__link,
+  .mega-menu__link,
+  .menu-drawer__menu-item {
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+{% endstyle %}

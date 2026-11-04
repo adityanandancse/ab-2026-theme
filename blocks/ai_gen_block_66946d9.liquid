@@ -1,0 +1,988 @@
+{% doc %}
+  @prompt
+    Create a Shopify section named "PDF or Page Grid (Animated Popup)".
+    
+    Each block in the section should let me upload:
+    
+    A cover image,
+    
+    A title (optional),
+    
+    A URL link (which can be either a PDF file or an HTML page).
+    
+    The section should:
+    
+    Display all blocks in a responsive grid layout (3–4 columns depending on screen size).
+    
+    When the cover image is clicked:
+    
+    If the link ends with .pdf, open the PDF inside a lightbox popup with a smooth fade-in and slide-up animation.
+    
+    If it’s an HTML page, open it in a new browser tab.
+    
+    Include a close button (×) inside the popup that smoothly rotates on hover.
+    
+    The popup should fade out when closed.
+    
+    Use only HTML, CSS, and vanilla JavaScript — no external libraries.
+    
+    Include a clean, minimal, elegant style consistent with Achin Bindlish’s couture aesthetic — refined transitions, rounded corners, soft shadows.
+    
+    Add schema settings so I can add multiple blocks with their own image, title, and link in the theme editor., Give all the customisations possible, Give option to manually upload pdf, that open in lightbox, Give option to shoe the list as carousel and Grid with customisations
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-pdf-grid-item-{{ ai_gen_id }} {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: {{ block.settings.card_border_radius }}px;
+    transition: transform {{ block.settings.hover_animation_speed }}s ease, box-shadow {{ block.settings.hover_animation_speed }}s ease;
+    background-color: {{ block.settings.card_background_color }};
+    box-shadow: 0 {{ block.settings.card_shadow_size }}px {{ block.settings.card_shadow_size | times: 2 }}px {{ block.settings.card_shadow_color }};
+    border: {{ block.settings.card_border_width }}px solid {{ block.settings.card_border_color }};
+  }
+
+  .ai-pdf-grid-item-{{ ai_gen_id }}:hover {
+    transform: translateY(-{{ block.settings.hover_lift_distance }}px) {% if block.settings.hover_scale %}scale({{ block.settings.hover_scale_amount }}){% endif %};
+    box-shadow: 0 {{ block.settings.hover_shadow_size }}px {{ block.settings.hover_shadow_size | times: 2.5 }}px {{ block.settings.hover_shadow_color }};
+  }
+
+  .ai-pdf-grid-item-image-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: {{ block.settings.image_aspect_ratio }};
+    object-fit: {{ block.settings.image_fit }};
+    display: block;
+    transition: transform {{ block.settings.hover_animation_speed }}s ease, opacity {{ block.settings.hover_animation_speed }}s ease;
+  }
+
+  {% if block.settings.image_hover_zoom %}
+    .ai-pdf-grid-item-{{ ai_gen_id }}:hover .ai-pdf-grid-item-image-{{ ai_gen_id }} {
+      transform: scale({{ block.settings.image_zoom_amount }});
+    }
+  {% endif %}
+
+  {% if block.settings.image_hover_opacity %}
+    .ai-pdf-grid-item-{{ ai_gen_id }}:hover .ai-pdf-grid-item-image-{{ ai_gen_id }} {
+      opacity: {{ block.settings.image_hover_opacity_amount }};
+    }
+  {% endif %}
+
+  .ai-pdf-grid-item-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: {{ block.settings.image_aspect_ratio }};
+    background-color: {{ block.settings.placeholder_background_color }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-pdf-grid-item-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: {{ block.settings.placeholder_icon_opacity }};
+    color: {{ block.settings.placeholder_icon_color }};
+  }
+
+  .ai-pdf-grid-item-title-{{ ai_gen_id }} {
+    padding: {{ block.settings.title_padding_vertical }}px {{ block.settings.title_padding_horizontal }}px;
+    font-size: {{ block.settings.title_font_size }}px;
+    font-weight: {{ block.settings.title_font_weight }};
+    color: {{ block.settings.title_color }};
+    text-align: {{ block.settings.title_alignment }};
+    letter-spacing: {{ block.settings.title_letter_spacing }}px;
+    text-transform: {% if block.settings.title_uppercase %}uppercase{% else %}none{% endif %};
+    line-height: {{ block.settings.title_line_height }};
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{ block.settings.lightbox_overlay_color }};
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity {{ block.settings.lightbox_animation_speed }}s ease, visibility {{ block.settings.lightbox_animation_speed }}s ease;
+    backdrop-filter: blur({{ block.settings.lightbox_blur }}px);
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }}.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+    position: relative;
+    width: {{ block.settings.lightbox_width }}%;
+    max-width: {{ block.settings.lightbox_max_width }}px;
+    height: {{ block.settings.lightbox_height }}vh;
+    background-color: {{ block.settings.lightbox_background_color }};
+    border-radius: {{ block.settings.lightbox_border_radius }}px;
+    box-shadow: 0 {{ block.settings.lightbox_shadow_size }}px {{ block.settings.lightbox_shadow_size | times: 3 }}px {{ block.settings.lightbox_shadow_color }};
+    transform: translateY({{ block.settings.lightbox_slide_distance }}px) scale({{ block.settings.lightbox_initial_scale }});
+    transition: transform {{ block.settings.lightbox_animation_speed }}s ease;
+    overflow: hidden;
+    border: {{ block.settings.lightbox_border_width }}px solid {{ block.settings.lightbox_border_color }};
+  }
+
+  .ai-pdf-lightbox-{{ ai_gen_id }}.active .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+    transform: translateY(0) scale(1);
+  }
+
+  .ai-pdf-lightbox-close-{{ ai_gen_id }} {
+    position: absolute;
+    top: {{ block.settings.close_button_position }}px;
+    right: {{ block.settings.close_button_position }}px;
+    width: {{ block.settings.close_button_size }}px;
+    height: {{ block.settings.close_button_size }}px;
+    background-color: {{ block.settings.close_button_background }};
+    border: {{ block.settings.close_button_border_width }}px solid {{ block.settings.close_button_border_color }};
+    border-radius: {% if block.settings.close_button_rounded %}50%{% else %}{{ block.settings.close_button_border_radius }}px{% endif %};
+    color: {{ block.settings.close_button_color }};
+    font-size: {{ block.settings.close_button_icon_size }}px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform {{ block.settings.close_button_animation_speed }}s ease, background-color {{ block.settings.close_button_animation_speed }}s ease;
+    box-shadow: 0 2px 8px {{ block.settings.close_button_shadow_color }};
+  }
+
+  .ai-pdf-lightbox-close-{{ ai_gen_id }}:hover {
+    transform: rotate({{ block.settings.close_button_rotation }}deg) {% if block.settings.close_button_hover_scale %}scale({{ block.settings.close_button_scale_amount }}){% endif %};
+    background-color: {{ block.settings.close_button_hover_background }};
+    color: {{ block.settings.close_button_hover_color }};
+  }
+
+  .ai-pdf-lightbox-iframe-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-pdf-lightbox-content-{{ ai_gen_id }} {
+      width: {{ block.settings.lightbox_width_mobile }}%;
+      height: {{ block.settings.lightbox_height_mobile }}vh;
+    }
+
+    .ai-pdf-grid-item-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_font_size_mobile }}px;
+      padding: {{ block.settings.title_padding_vertical_mobile }}px {{ block.settings.title_padding_horizontal_mobile }}px;
+    }
+
+    .ai-pdf-lightbox-close-{{ ai_gen_id }} {
+      width: {{ block.settings.close_button_size_mobile }}px;
+      height: {{ block.settings.close_button_size_mobile }}px;
+      font-size: {{ block.settings.close_button_icon_size_mobile }}px;
+    }
+  }
+{% endstyle %}
+
+<div {{ block.shopify_attributes }}>
+  <div
+    class="ai-pdf-grid-item-{{ ai_gen_id }}"
+    data-pdf-file="{{ block.settings.pdf_file }}"
+    data-link-url="{{ block.settings.link_url }}"
+  >
+    {% if block.settings.cover_image %}
+      <img
+        src="{{ block.settings.cover_image | image_url: width: 600 }}"
+        alt="{{ block.settings.title | escape }}"
+        loading="lazy"
+        width="{{ block.settings.cover_image.width }}"
+        height="{{ block.settings.cover_image.height }}"
+        class="ai-pdf-grid-item-image-{{ ai_gen_id }}"
+      >
+    {% else %}
+      <div class="ai-pdf-grid-item-placeholder-{{ ai_gen_id }}">
+        {{ 'image' | placeholder_svg_tag }}
+      </div>
+    {% endif %}
+
+    {% if block.settings.title != blank %}
+      <div class="ai-pdf-grid-item-title-{{ ai_gen_id }}">
+        {{ block.settings.title }}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="ai-pdf-lightbox-{{ ai_gen_id }}" id="ai-pdf-lightbox-{{ ai_gen_id }}">
+  <div class="ai-pdf-lightbox-content-{{ ai_gen_id }}">
+    <button
+      class="ai-pdf-lightbox-close-{{ ai_gen_id }}"
+      aria-label="Close"
+    >
+      ×
+    </button>
+    <iframe class="ai-pdf-lightbox-iframe-{{ ai_gen_id }}"></iframe>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const gridItem = document.querySelector('.ai-pdf-grid-item-{{ ai_gen_id }}');
+    const lightbox = document.getElementById('ai-pdf-lightbox-{{ ai_gen_id }}');
+    const closeBtn = lightbox.querySelector('.ai-pdf-lightbox-close-{{ ai_gen_id }}');
+    const iframe = lightbox.querySelector('.ai-pdf-lightbox-iframe-{{ ai_gen_id }}');
+
+    if (gridItem) {
+      gridItem.addEventListener('click', function() {
+        const pdfFile = this.getAttribute('data-pdf-file');
+        const linkUrl = this.getAttribute('data-link-url');
+        
+        if (pdfFile) {
+          iframe.src = pdfFile;
+          lightbox.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else if (linkUrl) {
+          if (linkUrl.toLowerCase().endsWith('.pdf')) {
+            iframe.src = linkUrl;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          } else {
+            window.open(linkUrl, '_blank');
+          }
+        }
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(function() {
+          iframe.src = '';
+        }, {{ block.settings.lightbox_animation_speed | times: 1000 }});
+      });
+    }
+
+    if (lightbox) {
+      lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) {
+          lightbox.classList.remove('active');
+          document.body.style.overflow = '';
+          setTimeout(function() {
+            iframe.src = '';
+          }, {{ block.settings.lightbox_animation_speed | times: 1000 }});
+        }
+      });
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "PDF or page item",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_image",
+      "label": "Cover image"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "header",
+      "content": "PDF or link"
+    },
+    {
+      "type": "paragraph",
+      "content": "Upload a PDF file to open in lightbox, or add a URL link below"
+    },
+    {
+      "type": "url",
+      "id": "pdf_file",
+      "label": "PDF file",
+      "info": "Upload PDF file - opens in lightbox"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Link URL (optional)",
+      "info": "Used if no PDF file is uploaded. PDF links open in lightbox, other URLs open in new tab"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_size",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Shadow size",
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "card_shadow_color",
+      "label": "Shadow color",
+      "default": "rgba(0, 0, 0, 0.08)"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Aspect ratio",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Wide (16:9)"
+        },
+        {
+          "value": "2 / 3",
+          "label": "Tall (2:3)"
+        }
+      ],
+      "default": "3 / 4"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "fill",
+          "label": "Fill"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_hover_zoom",
+      "label": "Zoom on hover",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "image_zoom_amount",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Zoom amount",
+      "default": 1.1
+    },
+    {
+      "type": "checkbox",
+      "id": "image_hover_opacity",
+      "label": "Change opacity on hover",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "image_hover_opacity_amount",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Hover opacity",
+      "default": 0.8
+    },
+    {
+      "type": "header",
+      "content": "Placeholder"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_background_color",
+      "label": "Background",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_icon_color",
+      "label": "Icon color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "range",
+      "id": "placeholder_icon_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Icon opacity",
+      "default": 0.3
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "title_font_size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "title_font_size_mobile",
+      "min": 10,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (mobile)",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "title_font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "select",
+      "id": "title_alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "title_uppercase",
+      "label": "Uppercase",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "title_letter_spacing",
+      "min": 0,
+      "max": 5,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Letter spacing",
+      "default": 0.5
+    },
+    {
+      "type": "range",
+      "id": "title_line_height",
+      "min": 1,
+      "max": 2,
+      "step": 0.1,
+      "label": "Line height",
+      "default": 1.4
+    },
+    {
+      "type": "range",
+      "id": "title_padding_vertical",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "title_padding_horizontal",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "title_padding_vertical_mobile",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical padding (mobile)",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "title_padding_horizontal_mobile",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal padding (mobile)",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Hover effects"
+    },
+    {
+      "type": "range",
+      "id": "hover_lift_distance",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Lift distance",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "hover_scale",
+      "label": "Scale on hover",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "hover_scale_amount",
+      "min": 1,
+      "max": 1.2,
+      "step": 0.1,
+      "label": "Scale amount",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "hover_shadow_size",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Hover shadow size",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "hover_shadow_color",
+      "label": "Hover shadow color",
+      "default": "rgba(0, 0, 0, 0.12)"
+    },
+    {
+      "type": "range",
+      "id": "hover_animation_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Animation speed",
+      "default": 0.3
+    },
+    {
+      "type": "header",
+      "content": "Lightbox"
+    },
+    {
+      "type": "color",
+      "id": "lightbox_overlay_color",
+      "label": "Overlay color",
+      "default": "rgba(0, 0, 0, 0.85)"
+    },
+    {
+      "type": "range",
+      "id": "lightbox_blur",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Backdrop blur",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "lightbox_background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "lightbox_width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Width",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "lightbox_width_mobile",
+      "min": 70,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Width (mobile)",
+      "default": 95
+    },
+    {
+      "type": "range",
+      "id": "lightbox_max_width",
+      "min": 600,
+      "max": 1400,
+      "step": 50,
+      "unit": "px",
+      "label": "Max width",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "lightbox_height",
+      "min": 50,
+      "max": 95,
+      "step": 5,
+      "unit": "vh",
+      "label": "Height",
+      "default": 85
+    },
+    {
+      "type": "range",
+      "id": "lightbox_height_mobile",
+      "min": 50,
+      "max": 90,
+      "step": 5,
+      "unit": "vh",
+      "label": "Height (mobile)",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "lightbox_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "lightbox_border_width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "lightbox_border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "range",
+      "id": "lightbox_shadow_size",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Shadow size",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "lightbox_shadow_color",
+      "label": "Shadow color",
+      "default": "rgba(0, 0, 0, 0.3)"
+    },
+    {
+      "type": "header",
+      "content": "Lightbox animation"
+    },
+    {
+      "type": "range",
+      "id": "lightbox_animation_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Animation speed",
+      "default": 0.4
+    },
+    {
+      "type": "range",
+      "id": "lightbox_slide_distance",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Slide distance",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "lightbox_initial_scale",
+      "min": 0.5,
+      "max": 1,
+      "step": 0.1,
+      "label": "Initial scale",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Close button"
+    },
+    {
+      "type": "color",
+      "id": "close_button_background",
+      "label": "Background",
+      "default": "rgba(0, 0, 0, 0.7)"
+    },
+    {
+      "type": "color",
+      "id": "close_button_hover_background",
+      "label": "Hover background",
+      "default": "rgba(0, 0, 0, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "close_button_color",
+      "label": "Icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "close_button_hover_color",
+      "label": "Hover icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "close_button_size",
+      "min": 24,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Size",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "close_button_size_mobile",
+      "min": 24,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Size (mobile)",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "close_button_icon_size",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "close_button_icon_size_mobile",
+      "min": 16,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size (mobile)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "close_button_position",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Position from edge",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "close_button_rounded",
+      "label": "Rounded",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "close_button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "close_button_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "close_button_border_color",
+      "label": "Border color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "close_button_shadow_color",
+      "label": "Shadow color",
+      "default": "rgba(0, 0, 0, 0.2)"
+    },
+    {
+      "type": "range",
+      "id": "close_button_rotation",
+      "min": 0,
+      "max": 360,
+      "step": 45,
+      "unit": "deg",
+      "label": "Hover rotation",
+      "default": 90
+    },
+    {
+      "type": "checkbox",
+      "id": "close_button_hover_scale",
+      "label": "Scale on hover",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "close_button_scale_amount",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Scale amount",
+      "default": 1.1
+    },
+    {
+      "type": "range",
+      "id": "close_button_animation_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "unit": "s",
+      "label": "Animation speed",
+      "default": 0.3
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDF or page item"
+    }
+  ]
+}
+{% endschema %}

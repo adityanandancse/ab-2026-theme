@@ -1,0 +1,440 @@
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-switcher-container-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: {{ block.settings.container_padding }}px;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+  }
+
+  .ai-switcher-title-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: 20px;
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.title_font_size }}px;
+  }
+
+  .ai-switcher-toggle-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    display: flex;
+    background-color: {{ block.settings.track_background }};
+    border-radius: {{ block.settings.track_border_radius }}px;
+    padding: {{ block.settings.track_padding }}px;
+    position: relative;
+  }
+
+  .ai-switcher-options-{{ ai_gen_id }} {
+    display: flex;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ai-switcher-option-{{ ai_gen_id }} {
+    flex: 1;
+    text-align: center;
+    padding: {{ block.settings.option_padding }}px;
+    color: {{ block.settings.option_text_color }};
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: {{ block.settings.option_font_weight }};
+    font-size: {{ block.settings.option_font_size }}px;
+    z-index: 2;
+    position: relative;
+    white-space: nowrap;
+  }
+
+  .ai-switcher-option-{{ ai_gen_id }}.active {
+    color: {{ block.settings.option_active_text_color }};
+  }
+
+  .ai-switcher-indicator-{{ ai_gen_id }} {
+    position: absolute;
+    height: calc(100% - {{ block.settings.track_padding | times: 2 }}px);
+    background-color: {{ block.settings.indicator_background }};
+    border-radius: {{ block.settings.indicator_border_radius }}px;
+    transition: all 0.3s ease;
+    z-index: 1;
+    top: {{ block.settings.track_padding }}px;
+  }
+
+  @media screen and (max-width: 767px) {
+    .ai-switcher-option-{{ ai_gen_id }} {
+      font-size: {{ block.settings.option_font_size_mobile }}px;
+      padding: {{ block.settings.option_padding_mobile }}px;
+    }
+    
+    .ai-switcher-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_font_size_mobile }}px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-switcher-container-{{ ai_gen_id }}">
+  {% if block.settings.title != blank %}
+    <h3 class="ai-switcher-title-{{ ai_gen_id }}">{{ block.settings.title }}</h3>
+  {% endif %}
+  
+  <div class="ai-switcher-toggle-wrapper-{{ ai_gen_id }}">
+    <div class="ai-switcher-indicator-{{ ai_gen_id }}"></div>
+    <div class="ai-switcher-options-{{ ai_gen_id }}">
+      {% for option in block.settings.options %}
+        <div class="ai-switcher-option-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}" 
+             data-value="{{ option.value }}" 
+             data-index="{{ forloop.index0 }}">
+          <span class="ai-switcher-option-text-{{ ai_gen_id }}">{{ option.label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.querySelector('.ai-switcher-options-{{ ai_gen_id }}');
+  const options = document.querySelectorAll('.ai-switcher-option-{{ ai_gen_id }}');
+  const indicator = document.querySelector('.ai-switcher-indicator-{{ ai_gen_id }}');
+  
+  // Set initial position of indicator
+  if (options.length > 0) {
+    const activeOption = document.querySelector('.ai-switcher-option-{{ ai_gen_id }}.active');
+    if (activeOption) {
+      const { left, width } = activeOption.getBoundingClientRect();
+      const containerLeft = container.getBoundingClientRect().left;
+      indicator.style.width = `${width}px`;
+      indicator.style.left = `${left - containerLeft}px`;
+    }
+  }
+  
+  // Handle option clicks
+  options.forEach(option => {
+    option.addEventListener('click', function() {
+      options.forEach(opt => opt.classList.remove('active'));
+      this.classList.add('active');
+      
+      const { left, width } = this.getBoundingClientRect();
+      const containerLeft = container.getBoundingClientRect().left;
+      indicator.style.width = `${width}px`;
+      indicator.style.left = `${left - containerLeft}px`;
+      
+      // Trigger custom event
+      const event = new CustomEvent('ai-switcher-change', {
+        detail: {
+          value: this.dataset.value,
+          index: parseInt(this.dataset.index)
+        }
+      });
+      container.dispatchEvent(event);
+    });
+  });
+});
+</script>
+
+<dynamic-switcher-{{ ai_gen_id }} class="ai-switcher-container-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.title != blank %}
+    <h3 class="ai-switcher-title-{{ ai_gen_id }}">{{ block.settings.title }}</h3>
+  {% endif %}
+
+  <div class="ai-switcher-options-wrapper-{{ ai_gen_id }}">
+    <div class="ai-switcher-options-{{ ai_gen_id }}">
+      {% for i in (1..5) %}
+        {% assign option_text_key = 'option_' | append: i | append: '_text' %}
+        {% assign option_link_key = 'option_' | append: i | append: '_link' %}
+        {% assign option_text = block.settings[option_text_key] %}
+        {% assign option_link = block.settings[option_link_key] %}
+
+        {% if option_text != blank and option_link != blank %}
+          <div class="ai-switcher-option-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}" data-url="{{ option_link }}" data-index="{{ i }}">
+            <span class="ai-switcher-option-text-{{ ai_gen_id }}">{{ option_text }}</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</dynamic-switcher-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class DynamicSwitcher{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.options = this.querySelectorAll('.ai-switcher-option-{{ ai_gen_id }}');
+        this.activeOption = this.querySelector('.ai-switcher-option-{{ ai_gen_id }}.active');
+        this.openInNewTab = {{ block.settings.open_in_new_tab | json }};
+      }
+
+      connectedCallback() {
+        this.setupEventListeners();
+        if ({{ block.settings.auto_redirect | json }} && this.activeOption) {
+          const url = this.activeOption.dataset.url;
+          this.redirectToUrl(url);
+        }
+      }
+
+      setupEventListeners() {
+        this.options.forEach(option => {
+          option.addEventListener('click', () => {
+            this.options.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            this.activeOption = option;
+            const url = option.dataset.url;
+            this.redirectToUrl(url);
+          });
+        });
+      }
+
+      redirectToUrl(url) {
+        if (url) {
+          if (this.openInNewTab) {
+            window.open(url, '_blank');
+          } else {
+            window.location.href = url;
+          }
+        }
+      }
+    }
+
+    customElements.define('dynamic-switcher-{{ ai_gen_id }}', DynamicSwitcher{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Dynamic Switcher",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Choose an option"
+    },
+    {
+      "type": "header",
+      "content": "Options"
+    },
+    {
+      "type": "text",
+      "id": "option_1_text",
+      "label": "Option 1 text",
+      "default": "Option 1"
+    },
+    {
+      "type": "url",
+      "id": "option_1_link",
+      "label": "Option 1 link"
+    },
+    {
+      "type": "text",
+      "id": "option_2_text",
+      "label": "Option 2 text",
+      "default": "Option 2"
+    },
+    {
+      "type": "url",
+      "id": "option_2_link",
+      "label": "Option 2 link"
+    },
+    {
+      "type": "text",
+      "id": "option_3_text",
+      "label": "Option 3 text"
+    },
+    {
+      "type": "url",
+      "id": "option_3_link",
+      "label": "Option 3 link"
+    },
+    {
+      "type": "text",
+      "id": "option_4_text",
+      "label": "Option 4 text"
+    },
+    {
+      "type": "url",
+      "id": "option_4_link",
+      "label": "Option 4 link"
+    },
+    {
+      "type": "text",
+      "id": "option_5_text",
+      "label": "Option 5 text"
+    },
+    {
+      "type": "url",
+      "id": "option_5_link",
+      "label": "Option 5 link"
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "Open links in new tab",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_redirect",
+      "label": "Auto-redirect to first option on page load",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Container Style"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 300,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "label": "Container width",
+      "default": 600
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Option Style"
+    },
+    {
+      "type": "range",
+      "id": "option_gap",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between options",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "option_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Option border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "option_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "option_font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "option_background",
+      "label": "Option background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "option_text_color",
+      "label": "Option text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "option_border_color",
+      "label": "Option border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "option_hover_background",
+      "label": "Option hover background",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "color",
+      "id": "option_hover_text_color",
+      "label": "Option hover text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "option_active_background",
+      "label": "Active option background",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "option_active_text_color",
+      "label": "Active option text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "option_active_border_color",
+      "label": "Active option border color",
+      "default": "#000f9f"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Dynamic Switcher"
+    }
+  ]
+}
+{% endschema %}

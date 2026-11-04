@@ -1,0 +1,212 @@
+{% assign ad_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+.ai-image-marquee-{{ ai_gen_id }} {
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  background-color: {{ block.settings.background_color }};
+  padding: {{ block.settings.section_padding }}px 0;
+}
+
+.ai-image-marquee-track-{{ ai_gen_id }} {
+  display: flex;
+  width: max-content;
+  gap: {{ block.settings.image_gap }}px;
+  animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+}
+
+.ai-image-marquee-{{ ai_gen_id }}:hover .ai-image-marquee-track-{{ ai_gen_id }} {
+  {% if block.settings.pause_on_hover %}
+    animation-play-state: paused;
+  {% endif %}
+}
+
+.ai-image-marquee-item-{{ ai_gen_id }} {
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: {{ block.settings.border_radius }}px;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+
+  {% case block.settings.aspect_ratio %}
+    {% when 'adapt' %}
+      width: auto;
+      height: {{ block.settings.image_height }}px;
+      max-height: 60vh;
+    {% when 'square' %}
+      width: {{ block.settings.image_height }}px;
+      height: {{ block.settings.image_height }}px;
+    {% when 'portrait' %}
+      width: calc({{ block.settings.image_height }}px * 0.75);
+      height: {{ block.settings.image_height }}px;
+    {% when 'landscape' %}
+      width: calc({{ block.settings.image_height }}px * 1.33);
+      height: {{ block.settings.image_height }}px;
+    {% when 'wide' %}
+      width: calc({{ block.settings.image_height }}px * 1.78);
+      height: {{ block.settings.image_height }}px;
+  {% endcase %}
+}
+
+.ai-image-marquee-item-{{ ai_gen_id }}:hover {
+  {% if block.settings.hover_effect == 'scale' %}
+    transform: scale(1.05);
+  {% elsif block.settings.hover_effect == 'lift' %}
+    transform: translateY(-5px);
+  {% endif %}
+}
+
+.ai-image-marquee-image-{{ ai_gen_id }} {
+  width: 100%;
+  height: 100%;
+  object-fit: {% if block.settings.aspect_ratio == 'adapt' %} contain {% else %} cover {% endif %};
+  object-position: center;
+  display: block;
+}
+
+@keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+{% if block.settings.scroll_direction == 'right' %}
+  .ai-image-marquee-track-{{ ai_gen_id }} {
+    animation-direction: reverse;
+  }
+{% endif %}
+{% endstyle %}
+
+
+{% liquid
+  if product
+    assign product_title = product.title
+    assign product_price = product.price | money
+    assign product_url = shop.url | append: product.url
+  else
+    assign product_title = 'this product'
+    assign product_price = '$0.00'
+    assign product_url = shop.url
+  endif
+
+  assign message_text = 'Hi! I am interested in buying ' | append: product_title | append: '. Link: ' | append: product_url
+  assign encoded_message = message_text | url_encode
+  assign whatsapp_url = 'https://wa.me/' | append: block.settings.phone_number | append: '?text=' | append: encoded_message
+%}
+
+<a
+  href="{{ whatsapp_url }}"
+  class="ad-whatsapp-button-{{ ad_gen_id }}"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Buy on WhatsApp"
+  {{ block.shopify_attributes }}
+>
+  <svg
+    class="ad-whatsapp-icon-{{ ad_gen_id }}"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.1982.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.4653.085"/></svg>
+  <span class="ad-whatsapp-text-{{ ad_gen_id }}">{{ block.settings.button_text }}</span>
+</a>
+
+{% schema %}
+{
+  "name": "WhatsApp buy button",
+  "settings": [
+    {
+      "type": "header",
+      "content": "WhatsApp settings"
+    },
+    {
+      "type": "text",
+      "id": "phone_number",
+      "label": "WhatsApp phone number",
+      "info": "Include country code without + sign (e.g., 1234567890)"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Buy on WhatsApp"
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Background color",
+      "default": "#25D366"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Hover background color",
+      "default": "#128C7E"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_padding",
+      "label": "Button padding",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "WhatsApp buy button"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

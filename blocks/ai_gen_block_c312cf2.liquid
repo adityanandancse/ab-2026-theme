@@ -1,0 +1,997 @@
+{% doc %}
+  @prompt
+    A magazine-style editorial layout, give customization to all the images to set the aspect ratio including adapt to images
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-editorial-layout-{{ ai_gen_id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: {{ block.settings.section_padding }}px 20px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-editorial-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: {{ block.settings.grid_gap }}px;
+    margin-bottom: {{ block.settings.content_spacing }}px;
+  }
+
+  .ai-editorial-main-article-{{ ai_gen_id }} {
+    position: relative;
+  }
+
+  .ai-editorial-main-image-{{ ai_gen_id }} {
+    width: 100%;
+    margin-bottom: {{ block.settings.content_spacing }}px;border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+    {% if block.settings.main_image_aspect_ratio == 'adapt' %}
+      height: auto;
+    {% else %}
+      height:0;
+      padding-bottom: {{ block.settings.main_image_aspect_ratio }};
+      position: relative;
+    {% endif %}
+  }
+
+  .ai-editorial-main-image-{{ ai_gen_id }} img {
+    {% if block.settings.main_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: auto;
+      display: block;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    {% endif %}
+  }
+
+  .ai-editorial-main-image-{{ ai_gen_id }} svg {
+    {% if block.settings.main_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: 400px;
+      background-color: #f8f8f8;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f8f8f8;
+    {% endif %}
+  }
+
+  .ai-editorial-category-{{ ai_gen_id }} {
+    display: inline-block;
+    background-color: {{ block.settings.category_bg_color }};
+    color: {{ block.settings.category_text_color }};
+    padding:6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius:20px;
+    margin-bottom: 16px;
+  }
+
+  .ai-editorial-main-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.main_title_size }}px;
+    line-height: 1.2;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 16px 0;
+    font-weight: 700;
+  }
+
+  .ai-editorial-main-excerpt-{{ ai_gen_id }} {
+    font-size: {{ block.settings.excerpt_size }}px;
+    line-height: 1.6;
+    color: {{ block.settings.text_color }};
+    opacity: 0.8;
+    margin-bottom: 20px;
+  }
+
+  .ai-editorial-meta-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: {{ block.settings.text_color }};
+    opacity: 0.7;
+    margin-bottom: 24px;
+  }
+
+  .ai-editorial-author-{{ ai_gen_id }} {
+    font-weight: 500;
+  }
+
+  .ai-editorial-date-{{ ai_gen_id }} {
+    position: relative;
+  }
+
+  .ai-editorial-date-{{ ai_gen_id }}::before {
+    content: '•';
+    position: absolute;
+    left: -10px;
+  }
+
+  .ai-editorial-read-more-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: {{ block.settings.link_color }};
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: color 0.3s ease;
+  }
+
+  .ai-editorial-read-more-{{ ai_gen_id }}:hover {
+    color: {{ block.settings.link_hover_color }};
+  }
+
+  .ai-editorial-sidebar-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.content_spacing }}px;
+  }
+
+  .ai-editorial-sidebar-article-{{ ai_gen_id }} {
+    display: flex;
+    gap: 16px;
+    padding-bottom: {{ block.settings.content_spacing }}px;
+    border-bottom: 1px solid {{ block.settings.border_color }};
+  }
+
+  .ai-editorial-sidebar-article-{{ ai_gen_id }}:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .ai-editorial-sidebar-image-{{ ai_gen_id }} {
+    width: 80px;
+    flex-shrink: 0;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+    {% if block.settings.sidebar_image_aspect_ratio == 'adapt' %}
+      height: auto;
+    {% else %}
+      height: 0;
+      padding-bottom: {{ block.settings.sidebar_image_aspect_ratio }};
+      position: relative;
+    {% endif %}
+  }
+
+  .ai-editorial-sidebar-image-{{ ai_gen_id }} img {
+    {% if block.settings.sidebar_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: auto;
+      display: block;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    {% endif %}
+  }
+
+  .ai-editorial-sidebar-image-{{ ai_gen_id }} svg {
+    {% if block.settings.sidebar_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: 80px;
+      background-color: #f8f8f8;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f8f8f8;
+    {% endif %}
+  }
+
+  .ai-editorial-sidebar-content-{{ ai_gen_id }} {
+    flex: 1;
+  }
+
+  .ai-editorial-sidebar-category-{{ ai_gen_id }} {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: {{ block.settings.category_bg_color }};
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-editorial-sidebar-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.sidebar_title_size }}px;
+    line-height: 1.3;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+
+  .ai-editorial-sidebar-meta-{{ ai_gen_id }} {
+    font-size: 12px;
+    color: {{ block.settings.text_color }};
+    opacity: 0.6;
+  }
+
+  .ai-editorial-bottom-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.bottom_columns }}, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+  }
+
+  .ai-editorial-bottom-article-{{ ai_gen_id }} {
+    text-align: center;
+  }
+
+  .ai-editorial-bottom-image-{{ ai_gen_id }} {
+    width: 100%;
+    margin-bottom:16px;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+    {% if block.settings.bottom_image_aspect_ratio == 'adapt' %}
+      height: auto;
+    {% else %}
+      height: 0;
+      padding-bottom: {{ block.settings.bottom_image_aspect_ratio }};
+      position: relative;
+    {% endif %}
+  }
+
+  .ai-editorial-bottom-image-{{ ai_gen_id }} img {
+    {% if block.settings.bottom_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: auto;
+      display: block;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    {% endif %}
+  }
+
+  .ai-editorial-bottom-image-{{ ai_gen_id }} svg {
+    {% if block.settings.bottom_image_aspect_ratio == 'adapt' %}
+      width: 100%;
+      height: 200px;
+      background-color: #f8f8f8;
+    {% else %}
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f8f8f8;
+    {% endif %}
+  }
+
+  .ai-editorial-bottom-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.bottom_title_size }}px;
+    line-height: 1.4;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 12px 0;
+    font-weight: 600;
+  }
+
+  .ai-editorial-bottom-excerpt-{{ ai_gen_id }} {
+    font-size: 14px;
+    line-height: 1.5;
+    color: {{ block.settings.text_color }};
+    opacity: 0.7;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-editorial-grid-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;gap: {{ block.settings.content_spacing }}px;
+    }
+
+    .ai-editorial-main-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.main_title_size | times: 0.8 }}px;
+    }
+
+    .ai-editorial-bottom-grid-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+    }
+
+    .ai-editorial-sidebar-article-{{ ai_gen_id }} {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .ai-editorial-sidebar-image-{{ ai_gen_id }} {
+      width: 100%;
+      align-self: center;{% if block.settings.sidebar_image_aspect_ratio != 'adapt' %}
+        padding-bottom: 50%;
+      {% endif %}
+    }
+  }
+{% endstyle %}
+
+<div class="ai-editorial-layout-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-editorial-grid-{{ ai_gen_id }}">
+    <article class="ai-editorial-main-article-{{ ai_gen_id }}">
+      <div class="ai-editorial-main-image-{{ ai_gen_id }}">
+        {% if block.settings.main_image %}
+          <img
+            src="{{ block.settings.main_image | image_url: width: 800 }}"
+            alt="{{ block.settings.main_image.alt | escape }}"
+            loading="lazy"
+            width="800"
+            height="400"
+          >
+        {% else %}
+          {{ 'hero-apparel-1' | placeholder_svg_tag }}
+        {% endif %}
+      </div>
+
+      {% if block.settings.main_category != blank %}
+        <span class="ai-editorial-category-{{ ai_gen_id }}">{{ block.settings.main_category }}</span>
+      {% endif %}
+
+      {% if block.settings.main_title != blank %}
+        <h1 class="ai-editorial-main-title-{{ ai_gen_id }}">{{ block.settings.main_title }}</h1>
+      {% endif %}
+
+      {% if block.settings.main_excerpt != blank %}
+        <div class="ai-editorial-main-excerpt-{{ ai_gen_id }}">{{ block.settings.main_excerpt }}</div>
+      {% endif %}<div class="ai-editorial-meta-{{ ai_gen_id }}">
+        {% if block.settings.main_author != blank %}
+          <span class="ai-editorial-author-{{ ai_gen_id }}">By {{ block.settings.main_author }}</span>
+        {% endif %}
+        {% if block.settings.main_date != blank %}
+          <span class="ai-editorial-date-{{ ai_gen_id }}">{{ block.settings.main_date }}</span>
+        {% endif %}
+      </div>
+
+      {% if block.settings.main_link != blank %}
+        <a href="{{ block.settings.main_link }}" class="ai-editorial-read-more-{{ ai_gen_id }}">
+          Read Full Article
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      {% endif %}
+    </article><aside class="ai-editorial-sidebar-{{ ai_gen_id }}">
+      {% for i in (1..3) %}
+        {% liquid
+          assign title_key = 'sidebar_title_' | append: i
+          assign category_key = 'sidebar_category_' | append: i
+          assign image_key = 'sidebar_image_' | append: i
+          assign author_key = 'sidebar_author_' | append: i
+          assign date_key = 'sidebar_date_' | append: i
+          assign link_key = 'sidebar_link_' | append: i
+
+          assign title = block.settings[title_key]
+          assign category = block.settings[category_key]
+          assign image = block.settings[image_key]
+          assign author = block.settings[author_key]
+          assign date = block.settings[date_key]
+          assign link = block.settings[link_key]
+        %}
+
+        {% if title != blank %}
+          <article class="ai-editorial-sidebar-article-{{ ai_gen_id }}">
+            <div class="ai-editorial-sidebar-image-{{ ai_gen_id }}">
+              {% if image %}
+                <img
+                  src="{{ image | image_url: width: 160 }}"
+                  alt="{{ image.alt | escape }}"
+                  loading="lazy"
+                  width="80"
+                  height="80"
+                >
+              {% else %}
+                {{ 'image' | placeholder_svg_tag }}
+              {% endif %}
+            </div>
+
+            <div class="ai-editorial-sidebar-content-{{ ai_gen_id }}">
+              {% if category != blank %}
+                <div class="ai-editorial-sidebar-category-{{ ai_gen_id }}">{{ category }}</div>
+              {% endif %}
+
+              {% if link != blank %}
+                <a href="{{ link }}" style="text-decoration: none; color: inherit;">
+              {% endif %}
+                <h3 class="ai-editorial-sidebar-title-{{ ai_gen_id }}">{{ title }}</h3>
+              {% if link != blank %}
+                </a>
+              {% endif %}
+
+              <div class="ai-editorial-sidebar-meta-{{ ai_gen_id }}">
+                {% if author != blank %}{{ author }}{% endif %}
+                {% if author != blank and date != blank %} • {% endif %}
+                {% if date != blank %}{{ date }}{% endif %}
+              </div>
+            </div>
+          </article>
+        {% endif %}
+      {% endfor %}
+    </aside>
+  </div>
+
+  <div class="ai-editorial-bottom-grid-{{ ai_gen_id }}">
+    {% for i in (1..4) %}
+      {% liquid
+        assign title_key = 'bottom_title_' | append: i
+        assign excerpt_key = 'bottom_excerpt_' | append: i
+        assign image_key = 'bottom_image_' | append: i
+        assign link_key = 'bottom_link_' | append: i
+
+        assign title = block.settings[title_key]
+        assign excerpt = block.settings[excerpt_key]
+        assign image = block.settings[image_key]
+        assign link = block.settings[link_key]
+      %}
+
+      {% if title != blank %}
+        <article class="ai-editorial-bottom-article-{{ ai_gen_id }}">
+          <div class="ai-editorial-bottom-image-{{ ai_gen_id }}">
+            {% if image %}
+              <img
+                src="{{ image | image_url: width: 400 }}"
+                alt="{{ image.alt | escape }}"
+                loading="lazy"
+                width="400"
+                height="200"
+              >
+            {% else %}
+              {{ 'collection-apparel-1' | placeholder_svg_tag }}
+            {% endif %}
+          </div>
+
+          {% if link != blank %}
+            <a href="{{ link }}" style="text-decoration: none; color: inherit;">
+          {% endif %}
+            <h3 class="ai-editorial-bottom-title-{{ ai_gen_id }}">{{ title }}</h3>
+          {% if link != blank %}
+            </a>
+          {% endif %}
+
+          {% if excerpt != blank %}
+            <div class="ai-editorial-bottom-excerpt-{{ ai_gen_id }}">{{ excerpt }}</div>
+          {% endif %}
+        </article>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Magazine editorial layout",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Main article"
+    },
+    {
+      "type": "image_picker",
+      "id": "main_image",
+      "label": "Featured image"
+    },
+    {
+      "type": "select",
+      "id": "main_image_aspect_ratio",
+      "label": "Main image aspect ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "50%",
+          "label": "2:1"
+        },
+        {
+          "value": "66.67%",
+          "label": "3:2"
+        },
+        {
+          "value": "75%",
+          "label": "4:3"
+        },
+        {
+          "value": "100%",
+          "label": "Square"
+        },
+        {
+          "value": "133.33%",
+          "label": "3:4"
+        },
+        {
+          "value": "150%",
+          "label": "2:3"
+        }
+      ],
+      "default": "66.67%"
+    },
+    {
+      "type": "text",
+      "id": "main_category",
+      "label": "Category",
+      "default": "Featured"
+    },
+    {
+      "type": "text",
+      "id": "main_title",
+      "label": "Title",
+      "default": "The Future of Fashion: Sustainable Design Trends"
+    },
+    {
+      "type": "textarea",
+      "id": "main_excerpt",
+      "label": "Excerpt",
+      "default": "Discover how innovative designers are reshaping the fashion industry with eco-friendly materials and ethical production methods."
+    },
+    {
+      "type": "text",
+      "id": "main_author",
+      "label": "Author",
+      "default": "Sarah Johnson"
+    },
+    {
+      "type": "text",
+      "id": "main_date",
+      "label": "Date",
+      "default": "March 15, 2024"
+    },
+    {
+      "type": "url",
+      "id": "main_link",
+      "label": "Article link"
+    },
+    {
+      "type": "header",
+      "content": "Sidebar images"
+    },
+    {
+      "type": "select",
+      "id": "sidebar_image_aspect_ratio",
+      "label": "Sidebar image aspect ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "50%",
+          "label": "2:1"
+        },
+        {
+          "value": "66.67%",
+          "label": "3:2"
+        },
+        {
+          "value": "75%",
+          "label": "4:3"
+        },
+        {
+          "value": "100%",
+          "label": "Square"
+        },
+        {
+          "value": "133.33%",
+          "label": "3:4"
+        },
+        {
+          "value": "150%",
+          "label": "2:3"
+        }
+      ],
+      "default": "100%"
+    },
+    {
+      "type": "header",
+      "content": "Sidebar article1"
+    },
+    {
+      "type": "image_picker",
+      "id": "sidebar_image_1",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_category_1",
+      "label": "Category",
+      "default": "Style"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_title_1",
+      "label": "Title",
+      "default": "Spring Color Palette Guide"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_author_1",
+      "label": "Author",
+      "default": "Emma Davis"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_date_1",
+      "label": "Date",
+      "default": "March 12, 2024"
+    },
+    {
+      "type": "url",
+      "id": "sidebar_link_1",
+      "label": "Article link"
+    },
+    {
+      "type": "header",
+      "content": "Sidebar article 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "sidebar_image_2",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_category_2",
+      "label": "Category",
+      "default": "Trends"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_title_2",
+      "label": "Title",
+      "default": "Minimalist Wardrobe Essentials"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_author_2",
+      "label": "Author",
+      "default": "Alex Chen"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_date_2",
+      "label": "Date",
+      "default": "March 10, 2024"
+    },
+    {
+      "type": "url",
+      "id": "sidebar_link_2",
+      "label": "Article link"
+    },
+    {
+      "type": "header",
+      "content": "Sidebar article 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "sidebar_image_3",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_category_3",
+      "label": "Category",
+      "default": "Beauty"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_title_3",
+      "label": "Title",
+      "default": "Natural Skincare Routine"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_author_3",
+      "label": "Author",
+      "default": "Maya Patel"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_date_3",
+      "label": "Date",
+      "default": "March 8, 2024"
+    },
+    {
+      "type": "url",
+      "id": "sidebar_link_3",
+      "label": "Article link"
+    },
+    {
+      "type": "header",
+      "content": "Bottom images"
+    },
+    {
+      "type": "select",
+      "id": "bottom_image_aspect_ratio",
+      "label": "Bottom image aspect ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "50%",
+          "label": "2:1"
+        },
+        {
+          "value": "66.67%",
+          "label": "3:2"
+        },
+        {
+          "value": "75%",
+          "label": "4:3"
+        },
+        {
+          "value": "100%",
+          "label": "Square"
+        },
+        {
+          "value": "133.33%",
+          "label": "3:4"
+        },
+        {
+          "value": "150%",
+          "label": "2:3"
+        }
+      ],
+      "default": "75%"
+    },
+    {
+      "type": "header",
+      "content": "Bottom articles"
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image_1",
+      "label": "Article1 image"
+    },
+    {
+      "type": "text",
+      "id": "bottom_title_1",
+      "label": "Article 1 title",
+      "default": "Vintage Revival: Thrift Shopping Tips"
+    },
+    {
+      "type": "textarea",
+      "id": "bottom_excerpt_1",
+      "label": "Article 1 excerpt",
+      "default": "Learn how to find unique pieces and build a sustainable wardrobe through vintage shopping."
+    },
+    {
+      "type": "url",
+      "id": "bottom_link_1",
+      "label": "Article 1 link"
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image_2",
+      "label": "Article 2 image"
+    },
+    {
+      "type": "text",
+      "id": "bottom_title_2",
+      "label": "Article 2 title",
+      "default": "Accessory Trends for2024"
+    },
+    {
+      "type": "textarea",
+      "id": "bottom_excerpt_2",
+      "label": "Article 2 excerpt",
+      "default": "From statement jewelry to functional bags, discover this year's must-have accessories."
+    },
+    {
+      "type": "url",
+      "id": "bottom_link_2",
+      "label": "Article 2 link"
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image_3",
+      "label": "Article 3 image"
+    },
+    {
+      "type": "text",
+      "id": "bottom_title_3",
+      "label": "Article 3 title",
+      "default": "Seasonal Wardrobe Transition"
+    },
+    {
+      "type": "textarea",
+      "id": "bottom_excerpt_3",
+      "label": "Article 3 excerpt",
+      "default": "Smart strategies for updating your closet as the seasons change."
+    },
+    {
+      "type": "url",
+      "id": "bottom_link_3",
+      "label": "Article 3 link"
+    },
+    {
+      "type": "image_picker",
+      "id": "bottom_image_4",
+      "label": "Article 4 image"
+    },
+    {
+      "type": "text",
+      "id": "bottom_title_4",
+      "label": "Article 4 title",
+      "default": "Designer Spotlight: Emerging Talent"
+    },
+    {
+      "type": "textarea",
+      "id": "bottom_excerpt_4",
+      "label": "Article 4 excerpt",
+      "default": "Meet the innovative designers who are shaping the future of fashion."
+    },
+    {
+      "type": "url",
+      "id": "bottom_link_4",
+      "label": "Article 4 link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "bottom_columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Bottom grid columns",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "content_spacing",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "label": "Content spacing",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "main_title_size",
+      "min": 24,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Main title size",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "excerpt_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Excerpt size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "sidebar_title_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Sidebar title size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "bottom_title_size",
+      "min": 16,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Bottom title size",
+      "default": 18
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "category_bg_color",
+      "label": "Category background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "category_text_color",
+      "label": "Category text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "link_hover_color",
+      "label": "Link hover color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Magazine editorial layout"
+    }
+  ]
+}
+{% endschema %}

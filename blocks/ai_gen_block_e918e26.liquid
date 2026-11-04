@@ -1,0 +1,722 @@
+{% doc %}
+  @prompt
+    an interactive vertical step by step process with image and it should highlights as the user scrolls
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-step-process-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.gap }}px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: {{ block.settings.padding }}px;
+  }
+
+  .ai-step-timeline-{{ ai_gen_id }} {
+    flex: 0 0 300px;
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+
+  .ai-step-timeline-item-{{ ai_gen_id }} {
+    position: relative;
+    padding: 20px 0 20px 40px;
+    border-left: 2px solid {{ block.settings.inactive_line_color }};
+    transition: all 0.3s ease;
+  }
+
+  .ai-step-timeline-item-{{ ai_gen_id }}:last-child {
+    border-left-color: transparent;
+  }
+
+  .ai-step-timeline-item-{{ ai_gen_id }}.active {
+    border-left-color: {{ block.settings.active_line_color }};
+  }
+
+  .ai-step-timeline-item-{{ ai_gen_id }}.active .ai-step-timeline-number-{{ ai_gen_id }} {
+    background-color: {{ block.settings.active_step_color }};
+    color: {{ block.settings.active_step_text_color }};transform: scale(1.1);
+  }
+
+  .ai-step-timeline-item-{{ ai_gen_id }}.active .ai-step-timeline-title-{{ ai_gen_id }} {
+    color: {{ block.settings.active_text_color }};
+    font-weight: 600;
+  }
+
+  .ai-step-timeline-number-{{ ai_gen_id }} {
+    position: absolute;
+    left: -12px;
+    top: 20px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: {{ block.settings.inactive_step_color }};
+    color: {{ block.settings.inactive_step_text_color }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .ai-step-timeline-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.step_title_size }}px;
+    color: {{ block.settings.inactive_text_color }};
+    margin: 0 0 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .ai-step-timeline-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.step_description_size }}px;
+    color: {{ block.settings.description_color }};
+    line-height: 1.4;
+  }
+
+  .ai-step-content-{{ ai_gen_id }} {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ai-step-content-item-{{ ai_gen_id }} {
+    min-height: 100vh;
+    padding: 60px 0;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-step-content-item-{{ ai_gen_id }}.active {
+    opacity: 1;
+  }
+
+  .ai-step-content-image-{{ ai_gen_id }} {
+    width: 100%;
+    margin-bottom: 30px;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-step-content-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .ai-step-content-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 400px;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-step-content-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+  }
+
+  .ai-step-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ai-step-content-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.content_title_size }}px;
+    color: {{ block.settings.content_title_color }};
+    margin: 0 0 20px;}
+
+  .ai-step-content-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.content_text_size }}px;
+    color: {{ block.settings.content_text_color }};
+    line-height: 1.6;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-step-process-{{ ai_gen_id }} {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .ai-step-timeline-{{ ai_gen_id }} {
+      flex: none;
+      position: static;
+      max-height: none;
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .ai-step-timeline-item-{{ ai_gen_id }} {
+      flex: 0 0 auto;
+      min-width: 200px;
+      border-left: none;
+      border-bottom: 2px solid {{ block.settings.inactive_line_color }};
+      padding: 0 20px 20px 0;
+      margin-right: 20px;
+    }
+
+    .ai-step-timeline-item-{{ ai_gen_id }}.active {
+      border-bottom-color: {{ block.settings.active_line_color }};
+    }
+
+    .ai-step-timeline-number-{{ ai_gen_id }} {
+      position: static;
+      margin-bottom: 10px;
+    }
+
+    .ai-step-content-item-{{ ai_gen_id }} {
+      min-height: auto;
+      padding: 30px 0;
+    }
+  }
+{% endstyle %}
+
+<scroll-steps-{{ ai_gen_id }}
+  class="ai-step-process-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-step-timeline-{{ ai_gen_id }}">
+    {% for i in (1..5) %}
+      {% liquid
+        assign step_enabled_key = 'step_' | append: i | append: '_enabled'
+        assign step_title_key = 'step_' | append: i | append: '_title'
+        assign step_description_key = 'step_' | append: i | append: '_description'
+
+        assign step_enabled = block.settings[step_enabled_key]
+        assign step_title = block.settings[step_title_key]
+        assign step_description = block.settings[step_description_key]
+      %}
+
+      {% if step_enabled %}
+        <div
+          class="ai-step-timeline-item-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}"
+          data-step="{{ i }}"
+        >
+          <div class="ai-step-timeline-number-{{ ai_gen_id }}">{{ forloop.index }}</div>
+          <h3 class="ai-step-timeline-title-{{ ai_gen_id }}">{{ step_title }}</h3>
+          {% if step_description != blank %}
+            <p class="ai-step-timeline-description-{{ ai_gen_id }}">{{ step_description }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="ai-step-content-{{ ai_gen_id }}">
+    {% for i in (1..5) %}
+      {% liquid
+        assign step_enabled_key = 'step_' | append: i | append: '_enabled'
+        assign step_image_key = 'step_' | append: i | append: '_image'
+        assign step_content_title_key = 'step_' | append: i | append: '_content_title'
+        assign step_content_text_key = 'step_' | append: i | append: '_content_text'
+
+        assign step_enabled = block.settings[step_enabled_key]
+        assign step_image = block.settings[step_image_key]
+        assign step_content_title = block.settings[step_content_title_key]
+        assign step_content_text = block.settings[step_content_text_key]
+      %}
+
+      {% if step_enabled %}
+        <div
+          class="ai-step-content-item-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}"
+          data-step="{{ i }}"
+        >
+          <div class="ai-step-content-image-{{ ai_gen_id }}">
+            {% if step_image %}
+              <img
+                src="{{ step_image | image_url: width: 800 }}"
+                alt="{{ step_image.alt | escape }}"
+                loading="lazy"
+                width="{{ step_image.width }}"
+                height="{{ step_image.height }}"
+              >
+            {% else %}
+              <div class="ai-step-content-image-placeholder-{{ ai_gen_id }}">
+                {{ 'image' | placeholder_svg_tag }}
+                <div class="ai-step-empty-state-{{ ai_gen_id }}">
+                  Add an image for step {{ forloop.index }}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if step_content_title != blank %}
+            <h2 class="ai-step-content-title-{{ ai_gen_id }}">{{ step_content_title }}</h2>
+          {% endif %}
+
+          {% if step_content_text != blank %}
+            <div class="ai-step-content-text-{{ ai_gen_id }}">{{ step_content_text }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</scroll-steps-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ScrollSteps{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.timelineItems = [];
+        this.contentItems = [];
+        this.currentStep = 1;
+        this.isScrolling = false;
+      }
+
+      connectedCallback() {
+        this.timelineItems = this.querySelectorAll('.ai-step-timeline-item-{{ ai_gen_id }}');
+        this.contentItems = this.querySelectorAll('.ai-step-content-item-{{ ai_gen_id }}');
+        
+        this.setupScrollObserver();
+        this.setupClickHandlers();
+      }
+
+      setupScrollObserver() {
+        const options = {
+          root: null,
+          rootMargin: '-50% 0px -50% 0px',
+          threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          if (this.isScrolling) return;
+
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const stepNumber = parseInt(entry.target.dataset.step);
+              this.activateStep(stepNumber);
+            }
+          });
+        }, options);
+
+        this.contentItems.forEach((item) => {
+          observer.observe(item);
+        });
+      }
+
+      setupClickHandlers() {
+        this.timelineItems.forEach((item) => {
+          item.addEventListener('click', () => {
+            const stepNumber = parseInt(item.dataset.step);
+            this.scrollToStep(stepNumber);
+          });
+        });
+      }
+
+      activateStep(stepNumber) {
+        if (this.currentStep === stepNumber) return;
+        
+        this.currentStep = stepNumber;
+
+        this.timelineItems.forEach((item) => {
+          const itemStep = parseInt(item.dataset.step);
+          item.classList.toggle('active', itemStep === stepNumber);
+        });
+
+        this.contentItems.forEach((item) => {
+          const itemStep = parseInt(item.dataset.step);
+          item.classList.toggle('active', itemStep === stepNumber);
+        });
+      }
+
+      scrollToStep(stepNumber) {
+        this.isScrolling = true;
+        
+        const targetContent = this.querySelector(`[data-step="${stepNumber}"].ai-step-content-item-{{ ai_gen_id }}`);
+        if (targetContent) {
+          targetContent.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+
+          setTimeout(() => {
+            this.isScrolling = false;
+          }, 1000);
+        }
+      }
+    }
+
+    customElements.define('scroll-steps-{{ ai_gen_id }}', ScrollSteps{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Interactive step process",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 20,
+      "max": 80,
+      "step": 10,
+      "unit": "px",
+      "label": "Gap between timeline and content",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 0,
+      "max": 60,
+      "step": 10,
+      "unit": "px",
+      "label": "Container padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Timeline colors"
+    },
+    {
+      "type": "color",
+      "id": "active_line_color",
+      "label": "Active line color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "inactive_line_color",
+      "label": "Inactive line color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "color",
+      "id": "active_step_color",
+      "label": "Active step background",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "active_step_text_color",
+      "label": "Active step text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "inactive_step_color",
+      "label": "Inactive step background",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "inactive_step_text_color",
+      "label": "Inactive step text",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "active_text_color",
+      "label": "Active text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "inactive_text_color",
+      "label": "Inactive text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description color",
+      "default": "#999999"
+    },
+    {
+      "type": "header",
+      "content": "Content colors"
+    },
+    {
+      "type": "color",
+      "id": "content_title_color",
+      "label": "Content title color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "content_text_color",
+      "label": "Content text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "step_title_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Step title size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "step_description_size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Step description size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "content_title_size",
+      "min": 20,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Content title size",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "content_text_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Content text size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Step 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "step_1_enabled",
+      "label": "Enable step 1",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_1_title",
+      "label": "Title",
+      "default": "Plan your approach"
+    },
+    {
+      "type": "textarea",
+      "id": "step_1_description",
+      "label": "Description",
+      "default": "Define your goals and strategy"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_1_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "step_1_content_title",
+      "label": "Content title",
+      "default": "Start with a solid plan"
+    },
+    {
+      "type": "richtext",
+      "id": "step_1_content_text",
+      "label": "Content text",
+      "default": "<p>Every successful project begins with careful planning. Take time to understand your objectives, identify potential challenges, and create a roadmap that will guide you through the entire process.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Step 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "step_2_enabled",
+      "label": "Enable step 2",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_2_title",
+      "label": "Title",
+      "default": "Gather resources"
+    },
+    {
+      "type": "textarea",
+      "id": "step_2_description",
+      "label": "Description",
+      "default": "Collect all necessary materials and tools"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_2_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "step_2_content_title",
+      "label": "Content title",
+      "default": "Prepare your toolkit"
+    },
+    {
+      "type": "richtext",
+      "id": "step_2_content_text",
+      "label": "Content text",
+      "default": "<p>Having the right resources at your disposal is crucial for success. This includes not just physical materials, but also knowledge, skills, and support from your team or community.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Step 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "step_3_enabled",
+      "label": "Enable step 3",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_3_title",
+      "label": "Title",
+      "default": "Execute the plan"
+    },
+    {
+      "type": "textarea",
+      "id": "step_3_description",
+      "label": "Description",
+      "default": "Put your strategy into action"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_3_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "step_3_content_title",
+      "label": "Content title",
+      "default": "Take action with confidence"
+    },
+    {
+      "type": "richtext",
+      "id": "step_3_content_text",
+      "label": "Content text",
+      "default": "<p>With your plan in place and resources ready, it's time to execute. Stay focused on your objectives while remaining flexible enough to adapt when unexpected challenges arise.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Step 4"
+    },
+    {
+      "type": "checkbox",
+      "id": "step_4_enabled",
+      "label": "Enable step 4",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_4_title",
+      "label": "Title",
+      "default": "Monitor progress"
+    },
+    {
+      "type": "textarea",
+      "id": "step_4_description",
+      "label": "Description",
+      "default": "Track your advancement and make adjustments"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_4_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "step_4_content_title",
+      "label": "Content title",
+      "default": "Stay on track"
+    },
+    {
+      "type": "richtext",
+      "id": "step_4_content_text",
+      "label": "Content text",
+      "default": "<p>Regular monitoring ensures you're moving in the right direction. Use metrics and feedback to gauge your progress and identify areas that need attention or improvement.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Step 5"
+    },
+    {
+      "type": "checkbox",
+      "id": "step_5_enabled",
+      "label": "Enable step 5",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_5_title",
+      "label": "Title",
+      "default": "Achieve success"
+    },
+    {
+      "type": "textarea",
+      "id": "step_5_description",
+      "label": "Description",
+      "default": "Reach your goals and celebrate"
+    },
+    {
+      "type": "image_picker",
+      "id": "step_5_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "step_5_content_title",
+      "label": "Content title",
+      "default": "Celebrate your achievement"
+    },
+    {
+      "type": "richtext",
+      "id": "step_5_content_text",
+      "label": "Content text",
+      "default": "<p>Success is the result of careful planning, proper execution, and persistent effort. Take time to celebrate your achievements and reflect on the lessons learned throughout the journey.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Interactive step process"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

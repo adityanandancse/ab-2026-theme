@@ -1,0 +1,431 @@
+{% doc %}
+  @prompt
+    instagram inspirt video marquee, in loop, auto-play
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-video-marquee-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-video-marquee__track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.video_gap }}px;
+    animation: ai-video-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+    width: fit-content;
+  }
+
+  .ai-video-marquee__video-container-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    width: {{ block.settings.video_width }}px;
+    height: {{ block.settings.video_height }}px;
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    position: relative;
+    background-color: #f4f4f4;
+  }
+
+  .ai-video-marquee__video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-video-marquee__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+    position: relative;
+  }
+
+  .ai-video-marquee__placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    opacity: 0.5;
+  }
+
+  .ai-video-marquee__empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;}
+
+  .ai-video-marquee__overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba({{ block.settings.overlay_color | color_extract: 'red' }}, {{ block.settings.overlay_color | color_extract: 'green' }}, {{ block.settings.overlay_color | color_extract: 'blue' }}, {{ block.settings.overlay_opacity | divided_by: 100.0 }}) 0%,
+      transparent 50%,
+      rgba({{ block.settings.overlay_color | color_extract: 'red' }}, {{ block.settings.overlay_color | color_extract: 'green' }}, {{ block.settings.overlay_color | color_extract: 'blue' }}, {{ block.settings.overlay_opacity | divided_by: 100.0 }}) 100%
+    );
+    pointer-events: none;
+  }
+
+  @keyframes ai-video-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - {{ block.settings.video_gap }}px));
+    }
+  }
+
+  {% if block.settings.pause_on_hover %}
+    .ai-video-marquee__track-{{ ai_gen_id }}:hover {
+      animation-play-state: paused;
+    }
+  {% endif %}
+
+  @media screen and (max-width: 749px) {
+    .ai-video-marquee__video-container-{{ ai_gen_id }} {
+      width: {{ block.settings.video_width | times: 0.7 }}px;
+      height: {{ block.settings.video_height | times: 0.7 }}px;
+    }
+
+    .ai-video-marquee-{{ ai_gen_id }} {
+      padding: {{ block.settings.section_padding | times: 0.7 }}px 0;
+    }
+  }
+{% endstyle %}
+
+<video-marquee-{{ ai_gen_id }}
+  class="ai-video-marquee-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-video-marquee__track-{{ ai_gen_id }}">
+    {% liquid
+      assign video_count = 0
+      for i in (1..8)
+        assign video_key = 'video_' | append: i
+        assign video = block.settings[video_key]
+        if video != blank
+          assign video_count = video_count | plus: 1
+        endif
+      endfor%}
+
+    {% for loop_iteration in (1..2) %}
+      {% for i in (1..8) %}
+        {% liquid
+          assign video_key = 'video_' | append: i
+          assign video = block.settings[video_key]
+        %}
+        
+        <div class="ai-video-marquee__video-container-{{ ai_gen_id }}">
+          {% if video != blank %}
+            <video
+              class="ai-video-marquee__video-{{ ai_gen_id }}"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              data-video-index="{{ i }}"
+            >
+              <source src="{{ video }}" type="video/mp4"></video>
+            {% if block.settings.show_overlay %}
+              <div class="ai-video-marquee__overlay-{{ ai_gen_id }}"></div>
+            {% endif %}
+          {% else %}
+            <div class="ai-video-marquee__placeholder-{{ ai_gen_id }}">
+              {{ 'image' | placeholder_svg_tag }}
+              <div class="ai-video-marquee__empty-state-{{ ai_gen_id }}">
+                Add video {{ i }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</video-marquee-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class VideoMarquee{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.isVisible = false;
+      }
+
+      connectedCallback() {
+        this.setupIntersectionObserver();
+        this.handleVideoPlayback();
+        this.setupVideoLooping();
+      }
+
+      setupIntersectionObserver() {
+        const options = {
+          root: null,
+          rootMargin: '50px',
+          threshold: 0.1
+        };
+
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            this.isVisible = entry.isIntersecting;
+            const videos = entry.target.querySelectorAll('.ai-video-marquee__video-{{ ai_gen_id }}');
+            if (entry.isIntersecting) {
+              videos.forEach(video => {
+                this.playVideo(video);
+              });
+            } else {
+              videos.forEach(video => {
+                video.pause();
+              });
+            }
+          });
+        }, options);
+
+        this.observer.observe(this);
+      }
+
+      handleVideoPlayback() {
+        const videos = this.querySelectorAll('.ai-video-marquee__video-{{ ai_gen_id }}');
+        
+        videos.forEach(video => {
+          video.addEventListener('loadedmetadata', () => {
+            if (this.isVisible) {
+              this.playVideo(video);
+            }
+          });
+
+          video.addEventListener('loadeddata', () => {
+            if (this.isVisible) {
+              this.playVideo(video);
+            }
+          });
+
+          video.addEventListener('canplay', () => {
+            if (this.isVisible) {
+              this.playVideo(video);
+            }
+          });
+
+          video.addEventListener('error', () => {
+            console.warn('Video failed to load:', video.src);
+            video.style.display = 'none';
+          });
+
+          video.addEventListener('ended', () => {
+            if (this.isVisible) {
+              video.currentTime = 0;
+              this.playVideo(video);
+            }
+          });
+        });
+      }
+
+      setupVideoLooping() {
+        const videos = this.querySelectorAll('.ai-video-marquee__video-{{ ai_gen_id }}');
+        
+        videos.forEach(video => {
+          video.addEventListener('timeupdate', () => {
+            if (video.currentTime >= video.duration - 0.1) {
+              video.currentTime = 0;}
+          });
+        });
+      }
+
+      playVideo(video) {
+        if (video.readyState >= 2) {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.warn('Auto-play failed:', error);
+            });
+          }
+        }
+      }
+
+      disconnectedCallback() {
+        if (this.observer) {
+          this.observer.disconnect();
+        }
+      }
+    }
+
+    customElements.define('video-marquee-{{ ai_gen_id }}', VideoMarquee{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Video marquee",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "video_width",
+      "min": 150,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Video width",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "video_height",
+      "min": 200,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Video height",
+      "default": 350
+    },
+    {
+      "type": "range",
+      "id": "video_gap",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between videos",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll speed",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "Show gradient overlay",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Videos"
+    },
+    {
+      "type": "video",
+      "id": "video_1",
+      "label": "Video 1"
+    },
+    {
+      "type": "video",
+      "id": "video_2",
+      "label": "Video 2"
+    },
+    {
+      "type": "video",
+      "id": "video_3",
+      "label": "Video 3"
+    },
+    {
+      "type": "video",
+      "id": "video_4",
+      "label": "Video 4"
+    },
+    {
+      "type": "video",
+      "id": "video_5",
+      "label": "Video 5"
+    },
+    {
+      "type": "video",
+      "id": "video_6",
+      "label": "Video 6"
+    },
+    {
+      "type": "video",
+      "id": "video_7",
+      "label": "Video 7"
+    },
+    {
+      "type": "video",
+      "id": "video_8",
+      "label": "Video 8"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video marquee"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,654 @@
+{% doc %}
+  @prompt
+    generate a clickable image marquee  containing all the aspect ratio including adapt to image. Should be highly responsive on all the devices should scroll in loop with all the customizations possible
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-image-marquee-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-image-marquee-track-{{ ai_gen_id }} {
+    display: flex;
+    animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+    gap: {{ block.settings.image_gap }}px;
+    will-change: transform;
+  }
+
+  .ai-image-marquee-track-{{ ai_gen_id }}:hover {
+    animation-play-state: {% if block.settings.pause_on_hover %}paused{% else %}running{% endif %};
+  }
+
+  .ai-image-marquee-item-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius }}px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    {% if block.settings.aspect_ratio == 'adapt' %}
+      height: auto;
+    {% else %}
+      aspect-ratio: {{ block.settings.aspect_ratio }};
+    {% endif %}
+    width: {{ block.settings.image_width }}px;
+  }
+
+  .ai-image-marquee-item-{{ ai_gen_id }}:hover {
+    transform: {% if block.settings.hover_effect == 'scale' %}scale(1.05){% elsif block.settings.hover_effect == 'lift' %}translateY(-5px){% endif %};
+  }
+
+  .ai-image-marquee-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: {{ block.settings.image_fit }};
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-image-marquee-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-image-marquee-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-image-marquee-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ai-image-marquee-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, {{ block.settings.overlay_opacity | divided_by: 100.0 }}) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 15px;
+  }
+
+  .ai-image-marquee-item-{{ ai_gen_id }}:hover .ai-image-marquee-overlay-{{ ai_gen_id }} {
+    opacity: {% if block.settings.show_overlay %}1{% else %}0{% endif %};
+  }
+
+  .ai-image-marquee-caption-{{ ai_gen_id }} {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - {{ block.settings.image_gap }}px));
+    }
+  }
+
+  {% if block.settings.scroll_direction == 'right' %}
+    .ai-image-marquee-track-{{ ai_gen_id }} {
+      animation-direction: reverse;
+    }
+  {% endif %}
+
+  @media screen and (max-width: 768px) {
+    .ai-image-marquee-item-{{ ai_gen_id }} {
+      width: {{ block.settings.mobile_image_width }}px;
+    }
+
+    .ai-image-marquee-track-{{ ai_gen_id }} {
+      gap: {{ block.settings.mobile_image_gap }}px;
+    }
+
+    @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(calc(-100% - {{ block.settings.mobile_image_gap }}px));
+      }
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .ai-image-marquee-item-{{ ai_gen_id }} {
+      width: {{ block.settings.mobile_image_width | times: 0.8 }}px;
+    }
+  }
+{% endstyle %}<image-marquee-{{ ai_gen_id }}
+  class="ai-image-marquee-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+><div class="ai-image-marquee-track-{{ ai_gen_id }}">
+    {% for i in (1..8) %}
+      {% liquid
+        assign image_key = 'image_' | append: i
+        assign url_key = 'url_' | append: i
+        assign caption_key = 'caption_' | append: i
+        assign image = block.settings[image_key]
+        assign url = block.settings[url_key]
+        assign caption = block.settings[caption_key]
+      %}
+
+      {% if image != blank %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}">
+          {% if url != blank %}
+            <a href="{{ url }}" class="ai-image-marquee-link-{{ ai_gen_id }}">
+          {% endif %}
+          <img
+            src="{{ image | image_url: width: 800 }}"
+            alt="{{ image.alt | escape }}"
+            class="ai-image-marquee-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="{{ image.width }}"
+            height="{{ image.height }}"
+          >
+
+          {% if block.settings.show_overlay and caption != blank %}
+            <div class="ai-image-marquee-overlay-{{ ai_gen_id }}">
+              <div class="ai-image-marquee-caption-{{ ai_gen_id }}">{{ caption }}</div>
+            </div>
+          {% endif %}
+
+          {% if url != blank %}
+            </a>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}">
+          <div class="ai-image-marquee-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+            <div class="ai-image-marquee-empty-state-{{ ai_gen_id }}">
+              Add image {{ i }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    {% for i in (1..8) %}
+      {% liquid
+        assign image_key = 'image_' | append: i
+        assign url_key = 'url_' | append: i
+        assign caption_key = 'caption_' | append: i
+        assign image = block.settings[image_key]
+        assign url = block.settings[url_key]
+        assign caption = block.settings[caption_key]
+      %}
+
+      {% if image != blank %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}-duplicate">
+          {% if url != blank %}
+            <a href="{{ url }}" class="ai-image-marquee-link-{{ ai_gen_id }}">
+          {% endif %}
+          
+          <img
+            src="{{ image | image_url: width: 800 }}"
+            alt="{{ image.alt | escape }}"
+            class="ai-image-marquee-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="{{ image.width }}"
+            height="{{ image.height }}"
+          >
+
+          {% if block.settings.show_overlay and caption != blank %}
+            <div class="ai-image-marquee-overlay-{{ ai_gen_id }}">
+              <div class="ai-image-marquee-caption-{{ ai_gen_id }}">{{ caption }}</div>
+            </div>
+          {% endif %}
+
+          {% if url != blank %}
+            </a>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="ai-image-marquee-item-{{ ai_gen_id }}" data-index="{{ i }}-duplicate">
+          <div class="ai-image-marquee-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+            <div class="ai-image-marquee-empty-state-{{ ai_gen_id }}">
+              Add image {{ i }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</image-marquee-{{ ai_gen_id }}><script>
+  (function() {
+    class ImageMarquee{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('.ai-image-marquee-track-{{ ai_gen_id }}');
+        this.items = this.querySelectorAll('.ai-image-marquee-item-{{ ai_gen_id }}');
+        this.setupMarquee();
+        this.setupClickHandlers();
+      }
+
+      setupMarquee() {
+        if (!this.track) return;
+
+        const firstItem = this.track.querySelector('.ai-image-marquee-item-{{ ai_gen_id }}');
+        if (!firstItem) return;
+
+        const itemWidth = firstItem.offsetWidth;
+        const gap = parseInt('{{ block.settings.image_gap }}') || 20;
+        const totalWidth = (itemWidth + gap) * (this.items.length / 2);
+
+        this.track.style.width = `${totalWidth * 2}px`;
+      }
+
+      setupClickHandlers() {
+        this.items.forEach(item => {
+          const link = item.querySelector('.ai-image-marquee-link-{{ ai_gen_id }}');
+          if (!link) {
+            item.style.cursor = 'default';
+          }});
+      }
+    }
+
+    customElements.define('image-marquee-{{ ai_gen_id }}', ImageMarquee{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Image marquee",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Aspect ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "1/1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4/3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "16/9",
+          "label": "Widescreen (16:9)"
+        },
+        {
+          "value": "9/16",
+          "label": "Vertical (9:16)"
+        },
+        {
+          "value": "2/1",
+          "label": "Wide (2:1)"
+        },
+        {
+          "value": "1/2",
+          "label": "Tall (1:2)"
+        }
+      ],
+      "default": "adapt"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "fill",
+          "label": "Fill"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "min": 100,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Image width",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_width",
+      "min": 80,
+      "max": 250,
+      "step": 10,
+      "unit": "px",
+      "label": "Mobile image width",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "image_gap",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Image gap",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_gap",
+      "min": 0,
+      "max": 30,
+      "step": 5,
+      "unit": "px",
+      "label": "Mobile image gap",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll speed",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "scroll_direction",
+      "label": "Scroll direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "Hover effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "scale",
+          "label": "Scale"
+        },
+        {
+          "value": "lift",
+          "label": "Lift"
+        }
+      ],
+      "default": "scale"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "Show overlay on hover",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Image 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_1",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_1",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_2",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_2",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_3",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_3",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_4",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_4",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_5",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_5",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_6",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_6",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_6",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 7"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_7",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_7",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_7",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 8"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_8",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_8",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_8",
+      "label": "Caption"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image marquee"
+    }
+  ]
+}
+{% endschema %}

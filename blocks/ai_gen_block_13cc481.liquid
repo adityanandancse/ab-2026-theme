@@ -1,0 +1,846 @@
+{% doc %}
+  @prompt
+    create a block like instagram reel with product Tag it shouldn't cover the full width of screen there should be hint of previous and next reel, give option to upload video manually as reel
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-product-reels-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    height: 600px;
+    overflow: hidden;
+    border-radius: 16px;
+    background-color: #000;
+  }
+
+  .ai-product-reels-container-{{ ai_gen_id }} {
+    display: flex;
+    height: 100%;
+    transition: transform 0.3s ease;will-change: transform;
+  }
+
+  .ai-product-reel-{{ ai_gen_id }} {
+    flex: 0 0 100%;
+    position: relative;
+    height: 100%;
+    background-color: #000;
+    overflow: hidden;
+  }
+
+  .ai-product-reel-video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;}
+
+  .ai-product-reel-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-product-reel-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1a1a1a;
+    color: #666;
+  }
+
+  .ai-product-reel-placeholder-{{ ai_gen_id }} svg {
+    width: 80px;
+    height: 80px;
+    opacity: 0.5;
+  }
+
+  .ai-product-reel-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 40px 20px 20px;
+    color: white;
+  }
+
+  .ai-product-reel-content-{{ ai_gen_id }} {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+  }
+
+  .ai-product-reel-info-{{ ai_gen_id }} {
+    flex: 1;
+  }
+
+  .ai-product-reel-title-{{ ai_gen_id }} {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;line-height: 1.3;
+  }
+
+  .ai-product-reel-description-{{ ai_gen_id }} {
+    font-size: 14px;
+    margin: 0 0 12px 0;
+    line-height: 1.4;opacity: 0.9;
+  }
+
+  .ai-product-reel-product-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+  }
+
+  .ai-product-reel-product-image-{{ ai_gen_id }} {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .ai-product-reel-product-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-product-reel-product-details-{{ ai_gen_id }} {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ai-product-reel-product-name-{{ ai_gen_id }} {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0 0 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ai-product-reel-product-price-{{ ai_gen_id }} {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+  }
+
+  .ai-product-reel-actions-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .ai-product-reel-action-{{ ai_gen_id }} {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  }
+
+  .ai-product-reel-action-{{ ai_gen_id }}:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .ai-product-reel-action-{{ ai_gen_id }} svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ai-product-reels-navigation-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  }
+
+  .ai-product-reels-navigation-{{ ai_gen_id }}:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .ai-product-reels-navigation-{{ ai_gen_id }}:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-product-reels-nav-prev-{{ ai_gen_id }} {
+    left: 15px;
+  }
+
+  .ai-product-reels-nav-next-{{ ai_gen_id }} {
+    right: 15px;
+  }
+
+  .ai-product-reels-indicators-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+
+  .ai-product-reels-indicator-{{ ai_gen_id }} {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transition: background-color 0.2s ease;
+  }
+
+  .ai-product-reels-indicator-{{ ai_gen_id }}.active {
+    background: white;
+  }
+
+  .ai-product-reel-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-product-reels-{{ ai_gen_id }} {
+      height: 500px;
+      border-radius: 12px;
+    }
+
+    .ai-product-reel-overlay-{{ ai_gen_id }} {
+      padding: 30px 15px 15px;
+    }
+
+    .ai-product-reel-title-{{ ai_gen_id }} {
+      font-size: 15px;
+    }
+
+    .ai-product-reel-description-{{ ai_gen_id }} {
+      font-size: 13px;
+    }
+
+    .ai-product-reel-actions-{{ ai_gen_id }} {
+      gap: 12px;
+    }
+
+    .ai-product-reel-action-{{ ai_gen_id }} {
+      width: 40px;
+      height: 40px;
+    }
+  }
+{% endstyle %}
+
+<product-reels-{{ ai_gen_id }}
+  class="ai-product-reels-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-product-reels-container-{{ ai_gen_id }}">
+    {% for i in (1..5) %}
+      {% liquid
+        assign reel_enabled_key = 'reel_' | append: i | append: '_enabled'
+        assign reel_type_key = 'reel_' | append: i | append: '_type'
+        assign reel_image_key = 'reel_' | append: i | append: '_image'
+        assign reel_video_key = 'reel_' | append: i | append: '_video'
+        assign reel_title_key = 'reel_' | append: i | append: '_title'
+        assign reel_description_key = 'reel_' | append: i | append: '_description'
+        assign reel_product_key = 'reel_' | append: i | append: '_product'
+
+        assign reel_enabled = block.settings[reel_enabled_key]
+        assign reel_type = block.settings[reel_type_key]
+        assign reel_image = block.settings[reel_image_key]
+        assign reel_video = block.settings[reel_video_key]
+        assign reel_title = block.settings[reel_title_key]
+        assign reel_description = block.settings[reel_description_key]
+        assign reel_product = block.settings[reel_product_key]%}
+
+      {% if reel_enabled %}
+        <div class="ai-product-reel-{{ ai_gen_id }}" data-reel-index="{{ forloop.index0 }}">
+          {% if reel_type == 'video' and reel_video %}
+            <video
+              class="ai-product-reel-video-{{ ai_gen_id }}"
+              src="{{ reel_video }}"
+              loop
+              muted
+              playsinline
+              preload="metadata"
+            ></video>
+          {% elsif reel_type == 'image' and reel_image %}
+            <img
+              class="ai-product-reel-image-{{ ai_gen_id }}"
+              src="{{ reel_image | image_url: width: 500 }}"
+              alt="{{ reel_image.alt | escape }}"
+              loading="lazy"width="500"
+              height="600"
+            >
+          {% else %}
+            <div class="ai-product-reel-placeholder-{{ ai_gen_id }}">
+              {{ 'image' | placeholder_svg_tag }}
+            </div>
+          {% endif %}
+
+          <div class="ai-product-reel-overlay-{{ ai_gen_id }}">
+            <div class="ai-product-reel-content-{{ ai_gen_id }}">
+              <div class="ai-product-reel-info-{{ ai_gen_id }}">
+                {% if reel_title != blank %}
+                  <h3 class="ai-product-reel-title-{{ ai_gen_id }}">{{ reel_title }}</h3>
+                {% endif %}
+
+                {% if reel_description != blank %}
+                  <p class="ai-product-reel-description-{{ ai_gen_id }}">{{ reel_description }}</p>
+                {% endif %}
+
+                {% if reel_product %}
+                  <div class="ai-product-reel-product-{{ ai_gen_id }}">
+                    <div class="ai-product-reel-product-image-{{ ai_gen_id }}">
+                      {% if reel_product.featured_image %}
+                        <img
+                          src="{{ reel_product.featured_image | image_url: width: 80 }}"
+                          alt="{{ reel_product.featured_image.alt | escape }}"
+                          width="80"
+                          height="80"loading="lazy"
+                        >
+                      {% endif %}
+                    </div>
+                    <div class="ai-product-reel-product-details-{{ ai_gen_id }}">
+                      <p class="ai-product-reel-product-name-{{ ai_gen_id }}">{{ reel_product.title }}</p>
+                      <p class="ai-product-reel-product-price-{{ ai_gen_id }}">{{ reel_product.price | money }}</p>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="ai-product-reel-actions-{{ ai_gen_id }}">
+                {% if reel_product %}
+                  <button
+                    class="ai-product-reel-action-{{ ai_gen_id }}"
+                    data-action="shop"
+                    data-product-url="{{ reel_product.url }}"
+                    aria-label="Shop product"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                  </button>
+                {% endif %}<button
+                  class="ai-product-reel-action-{{ ai_gen_id }}"
+                  data-action="like"
+                  aria-label="Like"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </button>
+
+                <button
+                  class="ai-product-reel-action-{{ ai_gen_id }}"
+                  data-action="share"
+                  aria-label="Share"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {% unless reel_type == 'video' and reel_video or reel_type == 'image' and reel_image %}
+            <div class="ai-product-reel-empty-state-{{ ai_gen_id }}">
+              Add media for reel {{ i }}
+            </div>
+          {% endunless %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <button
+    class="ai-product-reels-navigation-{{ ai_gen_id }} ai-product-reels-nav-prev-{{ ai_gen_id }}"
+    data-direction="prev"
+    aria-label="Previous reel"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15,18 9,12 15,6"/>
+    </svg>
+  </button>
+
+  <button
+    class="ai-product-reels-navigation-{{ ai_gen_id }} ai-product-reels-nav-next-{{ ai_gen_id }}"
+    data-direction="next"
+    aria-label="Next reel"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9,18 15,12 9,6"/>
+    </svg>
+  </button>
+
+  <div class="ai-product-reels-indicators-{{ ai_gen_id }}"></div>
+</product-reels-{{ ai_gen_id }}><script>
+  (function() {
+    class ProductReels{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentIndex = 0;
+        this.reels = [];
+        this.isTransitioning = false;}
+
+      connectedCallback() {
+        this.container = this.querySelector('.ai-product-reels-container-{{ ai_gen_id }}');
+        this.reels = Array.from(this.querySelectorAll('.ai-product-reel-{{ ai_gen_id }}'));
+        this.prevBtn = this.querySelector('.ai-product-reels-nav-prev-{{ ai_gen_id }}');
+        this.nextBtn = this.querySelector('.ai-product-reels-nav-next-{{ ai_gen_id }}');
+        this.indicatorsContainer = this.querySelector('.ai-product-reels-indicators-{{ ai_gen_id }}');
+
+        if (this.reels.length === 0) return;
+
+        this.setupIndicators();
+        this.setupEventListeners();
+        this.updateNavigation();
+        this.playCurrentVideo();
+      }
+
+      setupIndicators() {
+        this.indicatorsContainer.innerHTML = '';
+        this.reels.forEach((_, index) => {
+          const indicator = document.createElement('div');
+          indicator.className = 'ai-product-reels-indicator-{{ ai_gen_id }}';
+          if (index === 0) indicator.classList.add('active');
+          indicator.addEventListener('click', () => this.goToReel(index));
+          this.indicatorsContainer.appendChild(indicator);
+        });
+      }
+
+      setupEventListeners() {
+        this.prevBtn.addEventListener('click', () => this.previousReel());
+        this.nextBtn.addEventListener('click', () => this.nextReel());
+
+        this.querySelectorAll('[data-action="shop"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const productUrl = e.currentTarget.dataset.productUrl;
+            if (productUrl) {
+              window.location.href = productUrl;
+            }
+          });
+        });
+
+        this.querySelectorAll('[data-action="like"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const svg = e.currentTarget.querySelector('svg');
+            const isLiked = svg.getAttribute('fill') === 'currentColor';
+            svg.setAttribute('fill', isLiked ? 'none' : 'currentColor');
+          });
+        });
+
+        this.querySelectorAll('[data-action="share"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (navigator.share) {
+              navigator.share({
+                title: 'Check out this product',
+                url: window.location.href
+              });
+            }
+          });
+        });
+
+        let startY = 0;
+        let startX = 0;
+        this.addEventListener('touchstart', (e) => {
+          startY = e.touches[0].clientY;
+          startX = e.touches[0].clientX;
+        });
+
+        this.addEventListener('touchend', (e) => {
+          const endY = e.changedTouches[0].clientY;
+          const endX = e.changedTouches[0].clientX;
+          const diffY = startY - endY;
+          const diffX = startX - endX;
+
+          if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+              this.nextReel();
+            } else {
+              this.previousReel();
+            }
+          }
+        });
+      }
+
+      goToReel(index) {
+        if (this.isTransitioning || index === this.currentIndex || index < 0 || index >= this.reels.length) {
+          return;
+        }
+
+        this.isTransitioning = true;
+        this.pauseAllVideos();
+        this.currentIndex = index;
+        this.updateTransform();
+        this.updateIndicators();
+        this.updateNavigation();
+
+        setTimeout(() => {
+          this.isTransitioning = false;
+          this.playCurrentVideo();
+        }, 300);
+      }
+
+      nextReel() {
+        if (this.currentIndex < this.reels.length - 1) {
+          this.goToReel(this.currentIndex + 1);
+        }
+      }
+
+      previousReel() {
+        if (this.currentIndex > 0) {
+          this.goToReel(this.currentIndex - 1);
+        }
+      }
+
+      updateTransform() {
+        const translateX = -this.currentIndex * 100;
+        this.container.style.transform = `translateX(${translateX}%)`;
+      }
+
+      updateIndicators() {
+        const indicators = this.querySelectorAll('.ai-product-reels-indicator-{{ ai_gen_id }}');
+        indicators.forEach((indicator, index) => {
+          indicator.classList.toggle('active', index === this.currentIndex);
+        });
+      }
+
+      updateNavigation() {
+        this.prevBtn.disabled = this.currentIndex === 0;
+        this.nextBtn.disabled = this.currentIndex === this.reels.length - 1;
+      }
+
+      playCurrentVideo() {
+        const currentReel = this.reels[this.currentIndex];
+        const video = currentReel.querySelector('.ai-product-reel-video-{{ ai_gen_id }}');
+        if (video) {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }
+      }
+
+      pauseAllVideos() {
+        this.querySelectorAll('.ai-product-reel-video-{{ ai_gen_id }}').forEach(video => {
+          video.pause();
+        });
+      }
+    }
+
+    customElements.define('product-reels-{{ ai_gen_id }}', ProductReels{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product reels",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Reel1"
+    },
+    {
+      "type": "checkbox",
+      "id": "reel_1_enabled",
+      "label": "Enable reel 1",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "reel_1_type",
+      "label": "Media type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "reel_1_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "reel_1_video",
+      "label": "Video URL"
+    },
+    {
+      "type": "text",
+      "id": "reel_1_title",
+      "label": "Title",
+      "default": "Check out this look"
+    },
+    {
+      "type": "textarea",
+      "id": "reel_1_description",
+      "label": "Description",
+      "default": "Perfect for any occasion"
+    },
+    {
+      "type": "product",
+      "id": "reel_1_product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Reel 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "reel_2_enabled",
+      "label": "Enable reel 2",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "reel_2_type",
+      "label": "Media type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "reel_2_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "reel_2_video",
+      "label": "Video URL"
+    },
+    {
+      "type": "text",
+      "id": "reel_2_title",
+      "label": "Title",
+      "default": "Style inspiration"
+    },
+    {
+      "type": "textarea",
+      "id": "reel_2_description",
+      "label": "Description",
+      "default": "Get the look with our latest collection"
+    },
+    {
+      "type": "product",
+      "id": "reel_2_product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Reel 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "reel_3_enabled",
+      "label": "Enable reel 3",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "reel_3_type",
+      "label": "Media type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "reel_3_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "reel_3_video",
+      "label": "Video URL"
+    },
+    {
+      "type": "text",
+      "id": "reel_3_title",
+      "label": "Title",
+      "default": "Trending now"
+    },
+    {
+      "type": "textarea",
+      "id": "reel_3_description",
+      "label": "Description",
+      "default": "Join the trend with our bestsellers"
+    },
+    {
+      "type": "product",
+      "id": "reel_3_product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Reel 4"
+    },
+    {
+      "type": "checkbox",
+      "id": "reel_4_enabled",
+      "label": "Enable reel 4",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "reel_4_type",
+      "label": "Media type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "reel_4_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "reel_4_video",
+      "label": "Video URL"
+    },
+    {
+      "type": "text",
+      "id": "reel_4_title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "reel_4_description",
+      "label": "Description"
+    },
+    {
+      "type": "product",
+      "id": "reel_4_product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Reel 5"
+    },
+    {
+      "type": "checkbox",
+      "id": "reel_5_enabled",
+      "label": "Enable reel 5",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "reel_5_type",
+      "label": "Media type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "reel_5_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "reel_5_video",
+      "label": "Video URL"
+    },
+    {
+      "type": "text",
+      "id": "reel_5_title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "reel_5_description",
+      "label": "Description"
+    },
+    {
+      "type": "product",
+      "id": "reel_5_product",
+      "label": "Product"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product reels"
+    }
+  ]
+}
+{% endschema %}

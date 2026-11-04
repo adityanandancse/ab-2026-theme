@@ -1,0 +1,817 @@
+{% comment %} {% doc %}
+  @prompt
+    Create a contemporary, minimal, and aesthetic clickable image grid component.
+    
+    Requirements:
+    
+    Each image acts as a clickable link (URL configurable per image).
+    
+    Support for customizable aspect ratios (e.g., 1:1, 4:5, 16:9, adapt to image, 3:4) via a simple parameter.
+    
+    Images should be center-cropped and maintain their aspect ratio without distortion.
+    
+    Grid should be fully responsive, adjusting column count for mobile, tablet, and desktop.
+    
+    Hover effect: subtle zoom-in (scale 1.05) with a soft shadow fade-in.
+    
+    Spacing: minimal but balanced whitespace between images (gap configurable).
+    
+    Customizable border radius (default: 1rem) for a soft, modern feel.
+    
+    Support for both light and dark backgrounds while maintaining image clarity.
+    
+    Option to add captions (overlay on hover, with semi-transparent background).
+    
+    Use clean, semantic HTML/CSS (preferably Tailwind CSS or pure CSS Grid/Flexbox).
+    
+    Keep the overall look elegant, editorial, and gallery-like — no harsh borders or clutter.
+    
+    Allow easy addition/removal of images without breaking layout., Give adjustment for all the font sizes and all possible positions for it
+
+{% enddoc %} {% endcomment %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-image-grid-{{ ai_gen_id }} {
+    display: grid;
+    gap: {{ block.settings.grid_gap }}px;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    padding: {{ block.settings.section_padding }}px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  @media screen and (max-width: 990px) {
+    .ai-image-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_tablet }}, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-image-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+    }
+  }
+
+  .ai-image-grid-item-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius }}px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;display: block;
+    text-decoration: none;
+  }
+
+  .ai-image-grid-item-{{ ai_gen_id }}:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-image-grid-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    {% case block.settings.aspect_ratio %}
+      {% when '1:1' %}
+        aspect-ratio: 1/ 1;
+      {% when '4:5' %}
+        aspect-ratio: 4 / 5;
+      {% when '3:4' %}
+        aspect-ratio: 3 / 4;
+      {% when '16:9' %}
+        aspect-ratio: 16 / 9;
+      {% when 'adapt' %}
+        aspect-ratio: auto;
+    {% endcase %}
+    overflow: hidden;
+  }
+
+  .ai-image-grid-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-image-grid-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-image-grid-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-image-grid-caption-{{ ai_gen_id }} {
+    position: absolute;
+    color: {{ block.settings.caption_text_color }};
+    padding: {{ block.settings.caption_padding }}px;
+    font-size: {{ block.settings.caption_font_size }}px;
+    line-height: 1.4;
+    font-weight: {{ block.settings.caption_font_weight }};
+    text-align: {{ block.settings.caption_text_align }};
+    {% case block.settings.caption_position %}
+      {% when 'top-left' %}
+        top: 0;
+        left: 0;
+        background: {{ block.settings.caption_background_color }};
+      {% when 'top-center' %}
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: {{ block.settings.caption_background_color }};
+      {% when 'top-right' %}
+        top: 0;
+        right: 0;
+        background: {{ block.settings.caption_background_color }};
+      {% when 'center-left' %}
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        background: {{ block.settings.caption_background_color }};
+      {% when 'center-center' %}
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: {{ block.settings.caption_background_color }};
+      {% when 'center-right' %}
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background: {{ block.settings.caption_background_color }};
+      {% when 'bottom-left' %}
+        bottom: 0;
+        left: 0;
+        background: {{ block.settings.caption_background_color }};
+      {% when 'bottom-center' %}
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: {{ block.settings.caption_background_color }};
+      {% when 'bottom-right' %}
+        bottom: 0;
+        right: 0;
+        background: {{ block.settings.caption_background_color }};
+      {% when 'overlay-bottom' %}
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, {{ block.settings.caption_background_color }});
+        transform: translateY(100%);
+      {% when 'overlay-top' %}
+        top: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient({{ block.settings.caption_background_color }}, transparent);
+        transform: translateY(-100%);
+      {% when 'overlay-full' %}
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: {{ block.settings.caption_background_color }};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+    {% endcase %}
+    
+    transition: all 0.3s ease;
+  }
+
+  {% case block.settings.caption_hover_effect %}
+    {% when 'slide-up' %}
+      .ai-image-grid-caption-{{ ai_gen_id }} {
+        {% unless block.settings.caption_position contains 'overlay' %}
+          transform: translateY(100%);
+        {% endunless %}
+      }
+      .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+        transform: translateY(0);
+      }
+    {% when 'slide-down' %}
+      .ai-image-grid-caption-{{ ai_gen_id }} {
+        {% unless block.settings.caption_position contains 'overlay' %}
+          transform: translateY(-100%);
+        {% endunless %}
+      }
+      .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+        transform: translateY(0);
+      }
+    {% when 'fade-in' %}
+      .ai-image-grid-caption-{{ ai_gen_id }} {
+        opacity: 0;
+      }
+      .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+        opacity: 1;
+      }
+    {% when 'scale-in' %}
+      .ai-image-grid-caption-{{ ai_gen_id }} {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+        transform: scale(1);
+        opacity: 1;
+      }
+    {% when 'always-visible' %}
+      .ai-image-grid-caption-{{ ai_gen_id }} {
+        opacity: 1;
+      }
+  {% endcase %}
+
+  {% if block.settings.caption_position == 'overlay-bottom' %}
+    .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+      transform: translateY(0);
+    }
+  {% endif %}
+
+  {% if block.settings.caption_position == 'overlay-top' %}
+    .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+      transform: translateY(0);
+    }
+  {% endif %}
+
+  {% if block.settings.caption_position == 'overlay-full' %}
+    .ai-image-grid-item-{{ ai_gen_id }}:hover .ai-image-grid-caption-{{ ai_gen_id }} {
+      opacity: 1;
+    }
+  {% endif %}
+
+  {% if block.settings.show_captions == false %}
+    .ai-image-grid-caption-{{ ai_gen_id }} {
+      display: none;
+    }
+  {% endif %}
+
+  @media screen and (max-width: 749px) {
+    .ai-image-grid-caption-{{ ai_gen_id }} {
+      font-size: {{ block.settings.caption_font_size | times: 0.9 }}px;
+      padding: {{ block.settings.caption_padding | times: 0.8 }}px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-image-grid-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% for i in (1..12) %}
+    {% liquid
+      assign image_key = 'image_' | append: i
+      assign url_key = 'url_' | append: i
+      assign caption_key = 'caption_' | append: i
+      
+      assign image = block.settings[image_key]
+      assign url = block.settings[url_key]
+      assign caption = block.settings[caption_key]
+    %}
+    
+    {% if image != blank %}
+      <a 
+        href="{{ url | default: '#' }}" 
+        class="ai-image-grid-item-{{ ai_gen_id }}"
+        {% if url == blank %}onclick="return false;"{% endif %}
+      >
+        <div class="ai-image-grid-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ image | image_url: width: 800 }}"
+            alt="{{ image.alt | escape }}"
+            class="ai-image-grid-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="{{ image.width }}"
+            height="{{ image.height }}">
+          {% if caption != blank and block.settings.show_captions %}
+            <div class="ai-image-grid-caption-{{ ai_gen_id }}">
+              {{ caption }}
+            </div>
+          {% endif %}
+        </div>
+      </a>
+    {% elsif forloop.index <= 6 %}
+      <div class="ai-image-grid-item-{{ ai_gen_id }}" style="pointer-events: none;">
+        <div class="ai-image-grid-image-wrapper-{{ ai_gen_id }}">
+          <div class="ai-image-grid-placeholder-{{ ai_gen_id }}">
+            {{ 'image' | placeholder_svg_tag }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% schema %}
+{
+  "name": "Image Grid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        {
+          "value": "1:1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4:5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "3:4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "16:9",
+          "label": "Landscape (16:9)"
+        },
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        }
+      ],
+      "default": "1:1"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns on tablet",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Columns on mobile",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between images",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Caption settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_captions",
+      "label": "Show captions",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "caption_position",
+      "label": "Caption position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "center-left",
+          "label": "Center left"
+        },
+        {
+          "value": "center-center",
+          "label": "Center center"
+        },
+        {
+          "value": "center-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        },
+        {
+          "value": "overlay-bottom",
+          "label": "Overlay bottom"
+        },
+        {
+          "value": "overlay-top",
+          "label": "Overlay top"
+        },
+        {
+          "value": "overlay-full",
+          "label": "Overlay full"
+        }
+      ],
+      "default": "overlay-bottom"
+    },
+    {
+      "type": "select",
+      "id": "caption_hover_effect",
+      "label": "Caption hover effect",
+      "options": [
+        {
+          "value": "slide-up",
+          "label": "Slide up"
+        },
+        {
+          "value": "slide-down",
+          "label": "Slide down"
+        },
+        {
+          "value": "fade-in",
+          "label": "Fade in"
+        },
+        {
+          "value": "scale-in",
+          "label": "Scale in"
+        },
+        {
+          "value": "always-visible",
+          "label": "Always visible"
+        }
+      ],
+      "default": "slide-up"
+    },
+    {
+      "type": "range",
+      "id": "caption_font_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Caption font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "caption_font_weight",
+      "label": "Caption font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "select",
+      "id": "caption_text_align",
+      "label": "Caption text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "caption_padding",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Caption padding",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "caption_text_color",
+      "label": "Caption text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "caption_background_color",
+      "label": "Caption background color",
+      "default": "rgba(0, 0, 0, 0.7)"
+    },
+    {
+      "type": "header",
+      "content": "Image 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_1",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_1",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_2",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_2",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_3",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_3",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_4",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_4",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_5",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_5",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_6",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_6",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_6",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 7"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_7",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_7",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_7",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 8"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_8",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_8",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_8",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 9"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_9",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_9",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_9",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 10"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_10",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_10",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_10",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 11"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_11",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_11",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_11",
+      "label": "Caption"
+    },
+    {
+      "type": "header",
+      "content": "Image 12"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_12",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "url_12",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "caption_12",
+      "label": "Caption"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image Grid"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

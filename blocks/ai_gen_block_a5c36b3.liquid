@@ -1,0 +1,396 @@
+{% comment %} {% doc %}
+  @prompt
+    Create a block for instapost grid that redirects to the post page.  i'll just put the ig post link, give all aspect ratio options including adapt to image
+
+{% enddoc %} {% endcomment %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-instapost-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+    padding: {{ block.settings.section_padding }}px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-instapost-item-{{ ai_gen_id }} {
+    position: relative;
+    {% unless block.settings.aspect_ratio == 'adapt' %}
+      aspect-ratio: {{ block.settings.aspect_ratio }};
+    {% endunless %}border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;transition: transform 0.3s ease, box-shadow 0.3s ease;background-color: #f4f4f4;
+  }
+
+  .ai-instapost-item-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-instapost-link-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .ai-instapost-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    {% if block.settings.aspect_ratio == 'adapt' %}
+      object-fit: contain;
+    {% else %}
+      object-fit: cover;
+    {% endif %}transition: transform 0.3s ease;
+  }
+
+  .ai-instapost-item-{{ ai_gen_id }}:hover .ai-instapost-image-{{ ai_gen_id }} {
+    transform: scale(1.05);
+  }
+
+  .ai-instapost-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-instapost-item-{{ ai_gen_id }}:hover .ai-instapost-overlay-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-instapost-icon-{{ ai_gen_id }} {
+    width: 40px;
+    height: 40px;
+    color: white;
+  }
+
+  .ai-instapost-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    {% unless block.settings.aspect_ratio == 'adapt' %}
+      min-height: 200px;
+    {% else %}
+      min-height: 150px;
+    {% endunless %}
+  }
+
+  .ai-instapost-placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;color: #999;margin-bottom: 12px;
+  }
+
+  .ai-instapost-empty-text-{{ ai_gen_id }} {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-instapost-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+      gap: {{ block.settings.grid_gap | times: 0.75 }}px;padding: {{ block.settings.section_padding | times: 0.75 }}px;
+    }
+
+    .ai-instapost-icon-{{ ai_gen_id }} {
+      width: 32px;
+      height: 32px;
+    }
+  }
+{% endstyle %}
+
+<div
+  class="ai-instapost-grid-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% for i in (1..9) %}
+    {% liquid
+      assign post_image_key = 'post_' | append: i | append: '_image'
+      assign post_link_key = 'post_' | append: i | append: '_link'
+      assign post_image = block.settings[post_image_key]
+      assign post_link = block.settings[post_link_key]
+    %}
+
+    {% if post_image != blank or post_link != blank %}
+      <div class="ai-instapost-item-{{ ai_gen_id }}">
+        {% if post_link != blank %}
+          <a
+            href="{{ post_link }}"
+            class="ai-instapost-link-{{ ai_gen_id }}"
+            target="_blank"
+            rel="noopener noreferrer"aria-label="View Instagram post {{ i }}"
+          >{% endif %}
+
+        {% if post_image != blank %}
+          <img
+            src="{{ post_image | image_url: width: 500 }}"
+            alt="Instagram post {{ i }}"
+            class="ai-instapost-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="500"
+            height="500"
+          ><div class="ai-instapost-overlay-{{ ai_gen_id }}">
+            <svg
+              class="ai-instapost-icon-{{ ai_gen_id }}"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </div>
+        {% else %}
+          <div class="ai-instapost-placeholder-{{ ai_gen_id }}">
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <div class="ai-instapost-empty-text-{{ ai_gen_id }}">Add an image and Instagram link</div>
+          </div>
+        {% endif %}
+
+        {% if post_link != blank %}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% schema %}
+{
+  "name": "Instagram post grid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "options": [
+        {"value": "2", "label": "2"},
+        {"value": "3", "label": "3"},
+        {"value": "4", "label": "4"},
+        {"value": "5", "label": "5"}
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        {"value": "1", "label": "1"},
+        {"value": "2", "label": "2"}
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        {"value": "adapt", "label": "Adapt to image"},
+        {"value": "1", "label": "Square (1:1)"},
+        {"value": "4/3", "label": "Landscape (4:3)"},
+        {"value": "3/4", "label": "Portrait (3:4)"},
+        {"value": "16/9", "label": "Widescreen (16:9)"},
+        {"value": "9/16", "label": "Tall (9:16)"},
+        {"value": "3/2", "label": "Classic (3:2)"},
+        {"value": "2/3", "label": "Classic portrait (2:3)"}
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Post 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_1_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_1_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_2_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_2_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_3_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_3_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_4_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_4_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_5_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_5_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_6_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_6_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 7"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_7_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_7_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 8"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_8_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_8_link",
+      "label": "Instagram post link"
+    },
+    {
+      "type": "header",
+      "content": "Post 9"
+    },
+    {
+      "type": "image_picker",
+      "id": "post_9_image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "post_9_link",
+      "label": "Instagram post link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram post grid"
+    }
+  ]
+}
+{% endschema %}
