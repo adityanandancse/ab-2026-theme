@@ -1,0 +1,65 @@
+/*
+ * ab-prestige-match.css
+ * ---------------------------------------------------------------------------
+ * Surgical overrides so AB 2026 (Horizon) matches the live Prestige
+ * "dark coffee" look. Loaded immediately after base.css in layout/theme.liquid.
+ *
+ * Uses AB 2026's own selectors and custom properties only. No Prestige/SCSS
+ * code is copied — values are reproduced from the audited Prestige settings.
+ * The gold button hover-wipe animation is intentionally NOT recreated.
+ * ---------------------------------------------------------------------------
+ */
+
+/* a) Buttons — Prestige tracking / size / padding.
+ *    Targets AB's real button selectors (see assets/base.css ~L799). base.css
+ *    sets font-size/padding via vars on this same group selector; these direct
+ *    values load later at equal specificity and win. */
+.button,
+.button-secondary,
+.button-custom,
+button.shopify-payment-button__button--unbranded {
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  padding-block: 14px;
+  padding-inline: 28px;
+}
+
+/* b) Muted / subdued text + c) border line — scoped to scheme-1.
+ *    base.css/color-palette derive --color-foreground-subdued/-muted from the
+ *    scheme foreground via opacity, and set --color-border in :root. Pinning
+ *    them on the scheme element overrides the inherited :root values; the
+ *    doubled class (0,2,0) also beats Shopify's single-class scheme rule and
+ *    wins regardless of inline-<style> load order.
+ *
+ *    Border: Prestige $border-color = background(#241A14) color_mix text(#FFF6E4)
+ *    at 85% = 0.85*#241A14 + 0.15*#FFF6E4 = #453B33 (rgb 69 59 51). */
+.color-scheme-1.color-scheme-1 {
+  --color-foreground-subdued: #b5a493;
+  --color-foreground-muted: #b5a493;
+  --color-border: #453b33;
+  --color-border-rgb: 69 59 51;
+}
+
+/* d) Product grid gaps — Prestige's generous collection spacing.
+ *    Scoped to the collection/search grid (.product-grid) and the product-list
+ *    grid layout (.resource-list--grid) only; carousels (.resource-list__carousel)
+ *    and other grids are untouched. `gap` shorthand = <row-gap> <column-gap>.
+ *    Doubled class beats the single-class `gap` rule set in product-grid.liquid. */
+.product-grid.product-grid,
+.resource-list--grid.resource-list--grid {
+  gap: 28px 20px; /* mobile: row ~28px, column ~20px */
+}
+
+@media screen and (min-width: 750px) {
+  .product-grid.product-grid,
+  .resource-list--grid.resource-list--grid {
+    gap: 36px 60px; /* tablet: row ~36px, column ~60px */
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .product-grid.product-grid,
+  .resource-list--grid.resource-list--grid {
+    gap: 45px 100px; /* desktop: row ~45px, column ~100px */
+  }
+}

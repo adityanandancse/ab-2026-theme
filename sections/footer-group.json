@@ -15,7 +15,7 @@
       "type": "divider",
       "name": "t:names.divider_section",
       "settings": {
-        "background_color": "#281111",
+        "background_color": "#16100D",
         "divider_color": "",
         "section_width": "full-width",
         "thickness": 1,
@@ -86,7 +86,7 @@
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#c9a250",
+            "text_color": "#B5A493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -107,7 +107,7 @@
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#c9a250",
+            "text_color": "#B5A493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -128,7 +128,7 @@
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#c9a250",
+            "text_color": "#B5A493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -159,7 +159,7 @@
         "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
-        "background_color": "#281111",
+        "background_color": "#16100D",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -179,7 +179,7 @@
       "type": "divider",
       "name": "t:names.divider_section",
       "settings": {
-        "background_color": "#281111",
+        "background_color": "#16100D",
         "divider_color": "",
         "section_width": "full-width",
         "thickness": 1,
@@ -425,7 +425,7 @@
           "type": "footer-copyright",
           "settings": {
             "show_powered_by": false,
-            "text_color": "#e7ce93",
+            "text_color": "#B5A493",
             "font_size": "0.75rem",
             "case": "none"
           },
@@ -434,7 +434,7 @@
         "block_93b9c4ee33cf": {
           "type": "footer-policy-list",
           "settings": {
-            "text_color": "#e7ce93",
+            "text_color": "#B5A493",
             "font_size": "0.75rem",
             "case": "none"
           },
@@ -469,7 +469,7 @@
       "settings": {
         "section_width": "page-width",
         "gap": 24,
-        "background_color": "#281111",
+        "background_color": "#16100D",
         "divider_thickness": 1,
         "divider_color": "",
         "padding-block-start": 20,
