@@ -137,13 +137,26 @@
             "padding-inline-end": 0
           },
           "blocks": {}
+        },
+        "payment_icons_ab": {
+          "type": "payment-icons",
+          "settings": {
+            "horizontal_alignment": "center",
+            "gap": 10,
+            "padding-block-start": 8,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
         }
       },
       "block_order": [
         "ai_gen_block_c0407fb_KhzyYT",
         "menu_eMPAPD",
         "menu_maecVU",
-        "menu_QgYia9"
+        "menu_QgYia9",
+        "payment_icons_ab"
       ],
       "name": "t:names.custom_section",
       "settings": {

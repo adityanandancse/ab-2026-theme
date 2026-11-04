@@ -216,7 +216,7 @@
         "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -288,7 +288,7 @@
       ],
       "name": "Women Carousel",
       "settings": {
-        "bg_color": "#281111",
+        "bg_color": "#241A14",
         "padding_vertical": 0,
         "border_width": 0,
         "border_color": "#000000",
@@ -362,7 +362,7 @@
       ],
       "name": "Women Carousel",
       "settings": {
-        "bg_color": "#281111",
+        "bg_color": "#241A14",
         "padding_vertical": 20,
         "border_width": 0,
         "border_color": "#000000",
@@ -486,9 +486,92 @@
         "icons_shape": "none",
         "section_width": "page-width",
         "gap": 12,
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "padding-block-start": 15,
         "padding-block-end": 15
+      }
+    },
+    "worn_by_celebrities": {
+      "type": "ab-celebrity-looks",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "static": true,
+          "settings": {
+            "text": "<h4>Worn by Celebrities</h4>",
+            "alignment": "center",
+            "type_preset": "h4"
+          }
+        },
+        "look_1": {
+          "type": "ab-look",
+          "settings": {
+            "image": "shopify://shop_images/Genelia.png"
+          },
+          "blocks": {
+            "hotspot_1": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "mythic-grove-blazer-dress",
+                "x-position": 48,
+                "y-position": 60
+              }
+            },
+            "hotspot_2": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "mabox-bamboo-charcoal-blackhead-removal",
+                "x-position": 45,
+                "y-position": 65
+              }
+            },
+            "hotspot_3": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "3-colors-microblading-eyebrow-tattoo-pen",
+                "x-position": 70,
+                "y-position": 50
+              }
+            }
+          },
+          "block_order": [
+            "hotspot_1",
+            "hotspot_2",
+            "hotspot_3"
+          ]
+        },
+        "look_2": {
+          "type": "ab-look",
+          "settings": {
+            "image": "shopify://shop_images/Rajkumar_Rao.png"
+          },
+          "blocks": {
+            "hotspot_4": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "midnight-fern-tuxedo",
+                "x-position": 34,
+                "y-position": 23
+              }
+            }
+          },
+          "block_order": [
+            "hotspot_4"
+          ]
+        }
+      },
+      "block_order": [
+        "look_1",
+        "look_2"
+      ],
+      "settings": {
+        "background_color": "#241A14",
+        "hotspot_color": "#FFFFFF57",
+        "bullseye_color": "#ffffff",
+        "product_title_gap": 8,
+        "section_width": "page-width",
+        "padding-block-start": 40,
+        "padding-block-end": 40
       }
     },
     "chapter_one": {
@@ -669,7 +752,7 @@
         "media_height": "80svh",
         "section_width": "page-width",
         "extend_media": true,
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "padding-block-start": 0,
         "padding-block-end": 0
       }
@@ -853,7 +936,7 @@
         "media_height": "80svh",
         "section_width": "page-width",
         "extend_media": true,
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "padding-block-start": 0,
         "padding-block-end": 0
       }
@@ -1037,9 +1120,116 @@
         "media_height": "80svh",
         "section_width": "page-width",
         "extend_media": true,
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "padding-block-start": 0,
         "padding-block-end": 0
+      }
+    },
+    "defence_colony": {
+      "type": "hero",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "settings": {
+            "text": "<h2>DEFENCE COLONY</h2>",
+            "width": "fit-content",
+            "max_width": "narrow",
+            "alignment": "center",
+            "type_preset": "h3",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "#FFF6E4",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "body": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Third floor, north light, and a room where every motif is drawn before anything is cut. Fittings are by appointment.</p>",
+            "width": "100%",
+            "max_width": "narrow",
+            "alignment": "center",
+            "type_preset": "rte",
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "#FFF6E4",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "cta": {
+          "type": "button",
+          "settings": {
+            "label": "Book a fitting",
+            "link": "shopify://pages/contact",
+            "open_in_new_tab": false,
+            "style_class": "button",
+            "custom_button_background": "{{ settings.color_palette.foreground }}",
+            "custom_button_text": "{{ settings.color_palette.background }}",
+            "custom_button_border": "{{ settings.color_palette.background }}",
+            "link_text_color": "",
+            "width": "fit-content",
+            "custom_width": 100,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "heading",
+        "body",
+        "cta"
+      ],
+      "settings": {
+        "media_type_1": "image",
+        "image_1": "shopify://shop_images/bg_871d60f9-f8a8-4b32-86da-ab44d2ddc6de.png",
+        "media_type_2": "image",
+        "stack_media_on_mobile": false,
+        "custom_mobile_media": false,
+        "link": "",
+        "open_in_new_tab": false,
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 18,
+        "section_width": "full-width",
+        "section_height": "large",
+        "section_height_custom": 50,
+        "background_color": "",
+        "toggle_overlay": true,
+        "overlay_color": "#00000036",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "blurred_reflection": false,
+        "reflection_opacity": 75,
+        "padding-block-start": 40,
+        "padding-block-end": 72
       }
     },
     "journal": {
@@ -1186,7 +1376,7 @@
         "icons_shape": "none",
         "section_width": "page-width",
         "gap": 5,
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "padding-block-start": 20,
         "padding-block-end": 20
       }
@@ -1322,7 +1512,7 @@
         "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
-        "background_color": "#281111",
+        "background_color": "#241A14",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -1345,9 +1535,11 @@
     "seen_row_one",
     "seen_row_two",
     "wardrobes",
+    "worn_by_celebrities",
     "chapter_one",
     "chapter_two",
     "chapter_three",
+    "defence_colony",
     "journal",
     "signup"
   ]

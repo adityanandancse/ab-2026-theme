@@ -83,6 +83,7 @@
     "currency_code_enabled_cart_total": false,
     "quick_add": false,
     "mobile_quick_add": false,
+    "show_second_image_on_hover": true,
     "empty_state_collection": "",
     "product_corner_radius": 0,
     "card_corner_radius": 0,

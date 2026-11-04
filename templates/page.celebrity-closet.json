@@ -53,9 +53,227 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "celebrity_marquee_1": {
+      "type": "image-carousel",
+      "blocks": {
+        "image_peyMkz": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Madhuri.png",
+            "carousel_link": ""
+          }
+        },
+        "image_LH7xwe": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Genelia.png",
+            "carousel_link": "shopify://products/mythic-grove-blazer-dress"
+          }
+        },
+        "image_H8BiNU": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Shreya.png",
+            "carousel_link": ""
+          }
+        },
+        "image_Hpa4Vz": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Rajkumar_Rao.png",
+            "carousel_link": ""
+          }
+        },
+        "image_TLzagL": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Randeep.png",
+            "carousel_link": ""
+          }
+        },
+        "image_fzrbyF": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Aditya_Seal.png",
+            "carousel_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_peyMkz",
+        "image_LH7xwe",
+        "image_H8BiNU",
+        "image_Hpa4Vz",
+        "image_TLzagL",
+        "image_fzrbyF"
+      ],
+      "name": "Celebrity Carousel",
+      "settings": {
+        "bg_color": "#241A14",
+        "padding_vertical": 0,
+        "border_width": 0,
+        "border_color": "#000000",
+        "scroll_speed": 15,
+        "image_height": 320,
+        "image_spacing": 25,
+        "direction": "left"
+      }
+    },
+    "celebrity_marquee_2": {
+      "type": "image-carousel",
+      "blocks": {
+        "image_4BbYwh": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Wamiqa.png",
+            "carousel_link": ""
+          }
+        },
+        "image_eVL78q": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Thugesh.png",
+            "carousel_link": ""
+          }
+        },
+        "image_7pkUHn": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Anupam_Kher.png",
+            "carousel_link": ""
+          }
+        },
+        "image_Bynn4r": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Ranveer.png",
+            "carousel_link": ""
+          }
+        },
+        "image_jWG7Bb": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Randeep.png",
+            "carousel_link": ""
+          }
+        },
+        "image_bMYbDE": {
+          "type": "image",
+          "settings": {
+            "carousel_image": "shopify://shop_images/Aditya_Seal.png",
+            "carousel_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_4BbYwh",
+        "image_eVL78q",
+        "image_7pkUHn",
+        "image_Bynn4r",
+        "image_jWG7Bb",
+        "image_bMYbDE"
+      ],
+      "name": "Celebrity Carousel",
+      "settings": {
+        "bg_color": "#241A14",
+        "padding_vertical": 20,
+        "border_width": 0,
+        "border_color": "#000000",
+        "scroll_speed": 15,
+        "image_height": 320,
+        "image_spacing": 25,
+        "direction": "right"
+      }
+    },
+    "worn_by_celebrities": {
+      "type": "ab-celebrity-looks",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "static": true,
+          "settings": {
+            "text": "<h4>Worn by Celebrities</h4>",
+            "alignment": "center",
+            "type_preset": "h4"
+          }
+        },
+        "look_1": {
+          "type": "ab-look",
+          "settings": {
+            "image": "shopify://shop_images/Genelia.png"
+          },
+          "blocks": {
+            "hotspot_1": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "mythic-grove-blazer-dress",
+                "x-position": 48,
+                "y-position": 60
+              }
+            },
+            "hotspot_2": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "mabox-bamboo-charcoal-blackhead-removal",
+                "x-position": 45,
+                "y-position": 65
+              }
+            },
+            "hotspot_3": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "3-colors-microblading-eyebrow-tattoo-pen",
+                "x-position": 70,
+                "y-position": 50
+              }
+            }
+          },
+          "block_order": [
+            "hotspot_1",
+            "hotspot_2",
+            "hotspot_3"
+          ]
+        },
+        "look_2": {
+          "type": "ab-look",
+          "settings": {
+            "image": "shopify://shop_images/Rajkumar_Rao.png"
+          },
+          "blocks": {
+            "hotspot_4": {
+              "type": "_hotspot-product",
+              "settings": {
+                "product": "midnight-fern-tuxedo",
+                "x-position": 34,
+                "y-position": 23
+              }
+            }
+          },
+          "block_order": [
+            "hotspot_4"
+          ]
+        }
+      },
+      "block_order": [
+        "look_1",
+        "look_2"
+      ],
+      "settings": {
+        "background_color": "#241A14",
+        "hotspot_color": "#FFFFFF57",
+        "bullseye_color": "#ffffff",
+        "product_title_gap": 8,
+        "section_width": "page-width",
+        "padding-block-start": 40,
+        "padding-block-end": 40
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "celebrity_marquee_1",
+    "celebrity_marquee_2",
+    "worn_by_celebrities"
   ]
 }

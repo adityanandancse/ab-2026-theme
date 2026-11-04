@@ -63,3 +63,21 @@ button.shopify-payment-button__button--unbranded {
     gap: 45px 100px; /* desktop: row ~45px, column ~100px */
   }
 }
+
+/* e) Product-hotspots sizing — "Worn by Celebrities" looks.
+ *    The section keeps the image's own aspect ratio (section_height: auto) and
+ *    the image is object-fit:cover of a same-ratio box, so the hotspot x/y
+ *    percentages stay aligned with the image — nothing is cropped. At page
+ *    width a portrait image renders very tall; cap rendered height to 85vh by
+ *    constraining the box WIDTH (height derives from aspect-ratio) and centre
+ *    it. Desktop only (>=990px); mobile untouched. The doubled-ancestor
+ *    selector (0,2,0) beats the section's own rule regardless of load order. */
+@media screen and (min-width: 990px) {
+  .section-product-hotspots .section-product-hotspots__content {
+    width: 100%;
+    max-width: calc(85vh * var(--ratio, 0.8));
+    max-height: 85vh;
+    height: auto;
+    margin-inline: auto;
+  }
+}

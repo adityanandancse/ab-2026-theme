@@ -1,0 +1,55 @@
+{%- comment -%}
+  A single "look": one image at its natural aspect ratio with product hotspots
+  overlaid. Reuses the theme's _hotspot-product block and the global
+  .hotspots-container / .hotspots__background-image / .hotspot* styles (defined
+  in sections/product-hotspots.liquid, compiled into the theme stylesheet), plus
+  product-hotspot.js loaded by the parent ab-celebrity-looks section.
+
+  The media box takes the image's own ratio, so object-fit:cover does not crop
+  and the hotspot x/y percentages stay aligned with the image.
+{%- endcomment -%}
+{%- liquid
+  assign look_ratio = block.settings.image.aspect_ratio | default: 0.8
+-%}
+<div class="ab-look" {{ block.shopify_attributes }}>
+  <div
+    class="ab-look__media"
+    style="
+      --ratio: {{ look_ratio }};
+      --hotspot-size: 36px;
+      --minimum-width-dialog: 260px;
+      --maximum-width-dialog: 330px;
+      --width-product-image-dialog: 110px;
+      --product-title-gap: {{ section.settings.product_title_gap | default: 8 }}px;
+    "
+  >
+    {% if block.settings.image != blank %}
+      {% render 'image', image: block.settings.image, class: 'hotspots__background-image' %}
+    {% else %}
+      {{ 'hero-apparel-1' | placeholder_svg_tag: 'hotspots__background-image' }}
+    {% endif %}
+
+    <div class="hotspots-container">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Celebrity look",
+  "tag": null,
+  "blocks": [
+    {
+      "type": "_hotspot-product"
+    }
+  ],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    }
+  ]
+}
+{% endschema %}

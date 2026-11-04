@@ -1,0 +1,24 @@
+{%- doc -%}
+  Outputs a WhatsApp click-to-chat URL: https://wa.me/<number>[?text=<encoded message>].
+
+  Called with no parameters by sections/book-fitting.liquid, so every parameter is
+  optional and falls back to a sensible default.
+
+  @param {string} [number] - Phone number including country code, digits only.
+    Defaults to the theme's `whatsapp_number` setting if present, otherwise 918287222999.
+  @param {string} [message] - Optional pre-filled message. URL-encoded automatically.
+
+  @example
+  {%- capture wa_href -%}{% render 'whatsapp-link', message: 'Hi, I would like to book a fitting.' %}{%- endcapture -%}
+  <a href="{{ wa_href | strip }}" target="_blank" rel="noopener">Message us on WhatsApp</a>
+{%- enddoc -%}
+{%- liquid
+  assign wa_number = number | default: settings.whatsapp_number | default: '918287222999'
+  assign wa_number = wa_number | remove: '+' | remove: ' ' | remove: '-'
+  assign wa_url = 'https://wa.me/' | append: wa_number
+  if message != blank
+    assign encoded_message = message | url_encode
+    assign wa_url = wa_url | append: '?text=' | append: encoded_message
+  endif
+  echo wa_url
+-%}

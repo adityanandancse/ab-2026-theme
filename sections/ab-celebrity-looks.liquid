@@ -1,0 +1,268 @@
+{%- comment -%}
+  Celebrity looks — renders two (or more) "looks" side by side in a centred grid
+  whose column width matches a product card in the collection grid (4-per-row of
+  the narrow page). Each look reuses the theme's _hotspot-product block, so the
+  hotspot dots and popovers are driven by the existing product-hotspot.js and the
+  global .hotspot* / .hotspots-container / .hotspots__background-image styles.
+
+  Background/text follow the same pattern as collection-list / media-with-content:
+  an explicit background_color fed through the contrast-override snippet, which
+  emits scoped --color-* vars on .color-custom-{section.id}; the .section-background
+  div paints --color-background. (This theme does not use color-scheme-N classes.)
+
+  Images keep their natural aspect ratio (no cover cropping) so hotspot positions
+  stay aligned. The look media/containers do not clip, so popovers are not cut off.
+{%- endcomment -%}
+
+<script
+  src="{{ 'product-hotspot.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+{% render 'quick-add-styles' %}
+{% render 'quick-add-modal-styles' %}
+{% render 'swatch-styles' %}
+{% render 'quantity-selector-styles' %}
+{% render 'variant-picker-styles' %}
+{% render 'buy-buttons-styles' %}
+{% render 'product-badges-styles' %}
+
+{% liquid
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+%}
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+<div
+  class="
+    section
+    section--{{ section.settings.section_width }}
+    ab-celebrity-looks
+    {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
+    spacing-style
+  "
+  data-testid="ab-celebrity-looks"
+  style="
+    {% render 'spacing-style', settings: section.settings %}
+    --hotspot-size: 36px;
+    --minimum-width-dialog: 260px;
+    --maximum-width-dialog: 330px;
+    --width-product-image-dialog: 110px;
+    --product-title-gap: {{ section.settings.product_title_gap }}px;
+  "
+>
+  <div class="ab-celebrity-looks__inner">
+    <div class="ab-celebrity-looks__header">
+      {% content_for 'block', type: 'text', id: 'heading' %}
+    </div>
+
+    <div class="ab-celebrity-looks__row">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* Heading shares the looks-row container and is centred over it. */
+  .ab-celebrity-looks__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .ab-celebrity-looks__header {
+    width: 100%;
+    text-align: center;
+    margin-block-end: 28px;
+  }
+
+  /* Looks row: centred grid of card-width columns.
+   * 100% here is the section content width (same box the collection grid uses),
+   * so each column equals one 4-per-row product card. --looks-colgap mirrors the
+   * collection column gap at each breakpoint. Mobile: two cards fill the row. */
+  .ab-celebrity-looks__row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: start;
+    width: 100%;
+  }
+
+  .ab-look {
+    width: 100%;
+  }
+
+  /* Media box takes the image's own ratio. overflow is visible so the hotspot
+   * popover can extend beyond the (card-sized) image without being clipped. */
+  .ab-look__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--ratio, 0.8);
+    overflow: visible;
+  }
+
+  .ab-celebrity-looks .hotspots-container {
+    overflow: visible;
+  }
+
+  @media screen and (min-width: 750px) {
+    .ab-celebrity-looks__row {
+      --looks-colgap: 60px;
+      grid-template-columns: repeat(2, calc((100% - 3 * var(--looks-colgap)) / 4));
+      gap: 45px;
+    }
+  }
+
+  @media screen and (min-width: 1200px) {
+    .ab-celebrity-looks__row {
+      --looks-colgap: 100px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Celebrity looks",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "blocks": [
+    {
+      "type": "ab-look"
+    }
+  ],
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "placeholder": "Default"
+    },
+    {
+      "type": "header",
+      "content": "Hotspots"
+    },
+    {
+      "type": "color",
+      "id": "hotspot_color",
+      "label": "Hotspot color",
+      "default": "#FFFFFF57",
+      "alpha": true
+    },
+    {
+      "type": "color",
+      "id": "bullseye_color",
+      "label": "Bullseye color",
+      "default": "#ffffff",
+      "alpha": true
+    },
+    {
+      "type": "range",
+      "id": "product_title_gap",
+      "label": "Vertical gap",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "product_title_preset",
+      "label": "Product title",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "paragraph", "label": "Paragraph" },
+        { "value": "h4", "label": "H4" },
+        { "value": "h5", "label": "H5" },
+        { "value": "h6", "label": "H6" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "select",
+      "id": "product_price_preset",
+      "label": "Product price",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "paragraph", "label": "Paragraph" },
+        { "value": "h4", "label": "H4" },
+        { "value": "h5", "label": "H5" },
+        { "value": "h6", "label": "H6" }
+      ],
+      "default": ""
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "options": [
+        { "value": "page-width", "label": "Page" },
+        { "value": "full-width", "label": "Full" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Celebrity looks",
+      "settings": {
+        "background_color": "#241A14"
+      },
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "static": true,
+          "settings": {
+            "text": "<h2>Shop the look</h2>",
+            "alignment": "center",
+            "type_preset": "h4"
+          }
+        },
+        "look-1": {
+          "type": "ab-look"
+        },
+        "look-2": {
+          "type": "ab-look"
+        }
+      },
+      "block_order": ["look-1", "look-2"]
+    }
+  ]
+}
+{% endschema %}

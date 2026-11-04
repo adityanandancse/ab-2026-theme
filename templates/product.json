@@ -511,7 +511,7 @@
               "name": "t:names.custom_liquid",
               "disabled": true,
               "settings": {
-                "custom_liquid": "{% assign message_text = 'Hello, I would like to enquire about ' | append: product.title | append: '. ' | append: shop.url | append: product.url %}\n{% assign encoded_message = message_text | url_encode %}\n\n<a href=\"https://wa.me/919220401585?text={{ encoded_message }}\"\n   target=\"_blank\"\n   rel=\"noopener noreferrer\"\n   style=\"display:inline-block; width:100%; box-sizing:border-box; text-align:center;\n          background-color:#8f0917; color:#fff6e4;\n          padding:16px 24px; border:1px solid #8f0917; border-radius:0;\n          text-decoration:none; font-family:var(--font-body--family);\n          font-size:0.8125rem; letter-spacing:0.12em; text-transform:uppercase;\">\n   Enquire on WhatsApp\n</a>"
+                "custom_liquid": "{% assign message_text = 'Hello, I would like to enquire about ' | append: product.title | append: '. ' | append: shop.url | append: product.url %}\n{% assign encoded_message = message_text | url_encode %}\n\n<a href=\"https://wa.me/918287222999?text={{ encoded_message }}\"\n   target=\"_blank\"\n   rel=\"noopener noreferrer\"\n   style=\"display:inline-block; width:100%; box-sizing:border-box; text-align:center;\n          background-color:#8f0917; color:#fff6e4;\n          padding:16px 24px; border:1px solid #8f0917; border-radius:0;\n          text-decoration:none; font-family:var(--font-body--family);\n          font-size:0.8125rem; letter-spacing:0.12em; text-transform:uppercase;\">\n   Enquire on WhatsApp\n</a>"
               },
               "blocks": {}
             }

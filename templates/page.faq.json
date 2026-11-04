@@ -1,0 +1,624 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "Title",
+          "settings": {
+            "text": "<h1>{{ closest.page.title }}</h1>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h2",
+            "font": "var(--font-heading--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "sep_1": {
+          "type": "text",
+          "name": "Made to measure",
+          "settings": {
+            "text": "<h3>Made to measure</h3>",
+            "width": "100%",
+            "max_width": "none",
+            "alignment": "left",
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 8,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "acc_1": {
+          "type": "accordion",
+          "name": "Made to measure",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "divider_color": "",
+            "type_preset": "h6",
+            "background_color": "",
+            "text_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "row_1": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "How does made to measure work?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Choose Custom size on any piece and enter your measurements, or book a fitting at the atelier or by video. We cut and finish the piece to your measurements.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_1"]
+            },
+            "row_2": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "How long does a made-to-measure piece take?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Most made-to-measure pieces take 4–6 weeks from your final measurements. Heavily embroidered couture can take 8–12 weeks.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_2"]
+            },
+            "row_3": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Can I send my measurements from home?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_3": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Yes. Use our How to measure guide, then enter your measurements under Custom size. We'll check them with you on WhatsApp before we cut.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_3"]
+            },
+            "row_4": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Do I need to visit the atelier?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_4": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>No. A video consultation works for clients anywhere. You're welcome to visit the atelier if you're nearby.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_4"]
+            }
+          },
+          "block_order": ["row_1", "row_2", "row_3", "row_4"]
+        },
+        "sep_2": {
+          "type": "text",
+          "name": "Ready to ship",
+          "settings": {
+            "text": "<h3>Ready to ship</h3>",
+            "width": "100%",
+            "max_width": "none",
+            "alignment": "left",
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 8,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "acc_2": {
+          "type": "accordion",
+          "name": "Ready to ship",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "divider_color": "",
+            "type_preset": "h6",
+            "background_color": "",
+            "text_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "row_5": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "How quickly do ready-to-ship pieces dispatch?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_5": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Ready-to-ship pieces dispatch within 2–3 working days.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_5"]
+            },
+            "row_6": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "What if a ready-to-ship piece doesn’t fit?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_6": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Message us on WhatsApp within 7 days of delivery. We'll arrange an alteration or an exchange where possible.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_6"]
+            }
+          },
+          "block_order": ["row_5", "row_6"]
+        },
+        "sep_3": {
+          "type": "text",
+          "name": "Weddings",
+          "settings": {
+            "text": "<h3>Weddings</h3>",
+            "width": "100%",
+            "max_width": "none",
+            "alignment": "left",
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 8,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "acc_3": {
+          "type": "accordion",
+          "name": "Weddings",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "divider_color": "",
+            "type_preset": "h6",
+            "background_color": "",
+            "text_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "row_7": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "How early should I order for a wedding?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_7": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Start 3 months before the wedding for made-to-measure couture, so there's time for a fitting and finishing.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_7"]
+            },
+            "row_8": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Can you dress the whole family for one wedding?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_8": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Yes. Save looks for each person and function on My board, then share it with us and we'll plan the wardrobe together.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_8"]
+            }
+          },
+          "block_order": ["row_7", "row_8"]
+        },
+        "sep_4": {
+          "type": "text",
+          "name": "Delivery & international",
+          "settings": {
+            "text": "<h3>Delivery &amp; international</h3>",
+            "width": "100%",
+            "max_width": "none",
+            "alignment": "left",
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 8,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "acc_4": {
+          "type": "accordion",
+          "name": "Delivery & international",
+          "settings": {
+            "icon": "plus",
+            "dividers": true,
+            "divider_color": "",
+            "type_preset": "h6",
+            "background_color": "",
+            "text_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "row_9": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Do you ship outside India?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_9": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Yes, we ship to the UAE, USA, UK, Europe, Japan and more.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_9"]
+            },
+            "row_10": {
+              "type": "_accordion-row",
+              "settings": {
+                "heading": "Are duties and taxes included for international orders?",
+                "open_by_default": false,
+                "icon": "none",
+                "width": 20
+              },
+              "blocks": {
+                "answer_10": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Duties and import taxes are paid by the customer on delivery / included in the price.</p>",
+                    "width": "100%",
+                    "max_width": "none",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": ["answer_10"]
+            }
+          },
+          "block_order": ["row_9", "row_10"]
+        }
+      },
+      "block_order": [
+        "heading",
+        "sep_1",
+        "acc_1",
+        "sep_2",
+        "acc_2",
+        "sep_3",
+        "acc_3",
+        "sep_4",
+        "acc_4"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "gap": 24,
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
