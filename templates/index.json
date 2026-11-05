@@ -145,6 +145,68 @@
         "padding-block-end": 72
       }
     },
+    "ab_garment_rail": {
+      "type": "ab-garment-rail",
+      "blocks": {
+        "garment_1": {
+          "type": "garment",
+          "settings": {
+            "product": "midnight-blue-geometric-embroidered-anarkali-gown",
+            "cutout_image": "shopify://shop_images/1_12fd4e87-cfd5-4ea2-aacb-a1c56bb89436.png",
+            "badge_override": "",
+            "show_hanger": true
+          }
+        },
+        "garment_2": {
+          "type": "garment",
+          "settings": {
+            "product": "",
+            "cutout_image": "shopify://shop_images/2_6ca28345-0589-4b49-b101-d703fc78effb.png",
+            "badge_override": "",
+            "show_hanger": true
+          }
+        },
+        "garment_3": {
+          "type": "garment",
+          "settings": {
+            "product": "",
+            "cutout_image": "shopify://shop_images/3_f62eb72e-78b3-48e9-b102-c253821bda48.png",
+            "badge_override": "",
+            "show_hanger": true
+          }
+        },
+        "garment_4": {
+          "type": "garment",
+          "settings": {
+            "product": "",
+            "cutout_image": "shopify://shop_images/4_9d15d332-d845-4755-af88-65be663d0058.png",
+            "badge_override": "N",
+            "show_hanger": true
+          }
+        }
+      },
+      "block_order": [
+        "garment_1",
+        "garment_2",
+        "garment_3",
+        "garment_4"
+      ],
+      "disabled": true,
+      "settings": {
+        "eyebrow": "NEW COLLECTION",
+        "eyebrow_secondary": "COUTURE",
+        "heading": "",
+        "cta_label": "Shop the collection",
+        "cta_link": "shopify://collections/bandhgala-1",
+        "rail_style": "brass",
+        "garment_height": 420,
+        "sway_on_hover": true,
+        "section_width": "full-width",
+        "background_color": "#241a14",
+        "padding-block-start": 15,
+        "padding-block-end": 15
+      }
+    },
     "seen_heading": {
       "type": "section",
       "blocks": {
@@ -1562,6 +1624,7 @@
   },
   "order": [
     "hero_opening",
+    "ab_garment_rail",
     "seen_heading",
     "seen_row_one",
     "seen_row_two",

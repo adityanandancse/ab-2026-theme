@@ -1,0 +1,919 @@
+{%- comment -%}
+  AB garment rail — garments hang on hangers from a horizontal rail; each is a
+  product. Hover/focus a garment to make it active (its title + the CTA update
+  below the rail). Single row; centred when it fits, horizontal scroll with
+  drag-to-scroll + arrows when it overflows (same pattern as ab-celebrity-looks).
+
+  Colour follows ab-celebrity-looks: an explicit background_color fed through
+  contrast-override, emitting scoped --color-background (coffee #241A14) and
+  --color-foreground (cream #FFF6E4) on .color-custom-{section.id}. Gold #DBBF7C
+  and the brass rail are injected as scoped vars. This theme has NO color
+  schemes — no color_scheme setting is used.
+
+  Motion is CSS transforms only and uses three independent properties so they
+  never fight: `translate` (entrance), `rotate` (swing + neighbour nudge),
+  `transform` (pointer-x parallax on the track). All motion is gated behind
+  prefers-reduced-motion.
+{%- endcomment -%}
+
+{% liquid
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+
+  assign rail_style = section.settings.rail_style | default: 'brass'
+
+  # Resolve the default active garment (first block that has a product).
+  assign first_title = ''
+  assign first_url = ''
+  for block in section.blocks
+    assign bp = block.settings.product
+    if bp != blank and first_url == ''
+      assign first_title = bp.title
+      assign first_url = bp.url
+    endif
+  endfor
+%}
+
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+<ab-garment-rail
+  class="
+    section
+    section--{{ section.settings.section_width }}
+    ab-garment-rail
+    ab-garment-rail--{{ rail_style }}
+    {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
+    spacing-style
+  "
+  data-testid="ab-garment-rail"
+  data-sway="{{ section.settings.sway_on_hover }}"
+  style="
+    {% render 'spacing-style', settings: section.settings %}
+    --garment-h: {{ section.settings.garment_height | default: 420 }}px;
+    --ab-gold: #DBBF7C;
+  "
+>
+  <div class="ab-garment-rail__inner">
+    {%- if section.settings.eyebrow != blank or section.settings.eyebrow_secondary != blank -%}
+      <div class="ab-garment-rail__eyebrows">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="ab-garment-rail__eyebrow">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        {%- if section.settings.eyebrow != blank and section.settings.eyebrow_secondary != blank -%}
+          <span class="ab-garment-rail__eyebrow-sep" aria-hidden="true"></span>
+        {%- endif -%}
+        {%- if section.settings.eyebrow_secondary != blank -%}
+          <span class="ab-garment-rail__eyebrow">{{ section.settings.eyebrow_secondary }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="ab-garment-rail__heading h4">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    <div class="ab-garment-rail__stage" data-rail-stage>
+      <button
+        type="button"
+        class="ab-garment-rail__arrow ab-garment-rail__arrow--prev button button-unstyled flip-x"
+        data-rail-prev
+        aria-label="{{ 'accessibility.slideshow_previous' | t | default: 'Previous' }}"
+        hidden
+      >
+        <span class="svg-wrapper icon-arrow">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+      </button>
+
+      <div class="ab-garment-rail__rail" aria-hidden="true"></div>
+
+      <div class="ab-garment-rail__track" data-rail-track>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign gb = block.settings
+            assign gp = gb.product
+            assign g_url = gp.url
+            assign g_title = gp.title | default: ''
+
+            # ---- Badge: explicit override wins, else auto (sale -> new -> low stock) ----
+            assign g_badge = gb.badge_override | strip
+            if g_badge == blank and gp != blank
+              if gp.compare_at_price > gp.price and gp.compare_at_price > 0
+                assign g_off = gp.compare_at_price | minus: gp.price | times: 100 | divided_by: gp.compare_at_price
+                assign g_badge = '-' | append: g_off | append: '%'
+              else
+                assign g_tagstr = gp.tags | join: '|' | downcase | prepend: '|' | append: '|'
+                if g_tagstr contains '|new|'
+                  assign g_badge = 'NEW'
+                else
+                  assign g_tracked = false
+                  assign g_inv = 0
+                  for v in gp.variants
+                    if v.inventory_management != blank
+                      assign g_tracked = true
+                      assign g_inv = g_inv | plus: v.inventory_quantity
+                    endif
+                  endfor
+                  if g_tracked and g_inv > 0 and g_inv <= 3
+                    assign g_badge = 'ONLY ' | append: g_inv | append: ' LEFT'
+                  endif
+                endif
+              endif
+            endif
+
+            assign g_alt = g_title | default: 'Garment'
+          -%}
+
+          {%- capture garment_inner -%}
+            {%- if gb.show_hanger -%}
+              <span class="ab-garment-rail__hook" aria-hidden="true">
+                <svg viewBox="0 0 80 46" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                  <path d="M40 13c0-4 3-8 0-11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="40" cy="4.5" r="3.2" stroke="currentColor" stroke-width="2.4"/>
+                  <path d="M40 13 5 40c-2 1.6-1 4.5 1.6 4.5h66.8c2.6 0 3.6-2.9 1.6-4.5L40 13Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            {%- endif -%}
+
+            {%- if g_badge != blank -%}
+              <span class="ab-garment-rail__badge">{{ g_badge }}</span>
+            {%- endif -%}
+
+            <span class="ab-garment-rail__img-wrap">
+              {%- if gb.cutout_image != blank -%}
+                {{
+                  gb.cutout_image
+                  | image_url: width: 700
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '300, 500, 700',
+                    sizes: '(min-width: 750px) 300px, 50vw',
+                    class: 'ab-garment-rail__img',
+                    alt: g_alt
+                }}
+              {%- elsif gp.featured_media != blank -%}
+                {{
+                  gp.featured_media.preview_image
+                  | image_url: width: 700
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '300, 500, 700',
+                    sizes: '(min-width: 750px) 300px, 50vw',
+                    class: 'ab-garment-rail__img',
+                    alt: g_alt
+                }}
+              {%- else -%}
+                {{ 'product-apparel-1' | placeholder_svg_tag: 'ab-garment-rail__img ab-garment-rail__img--placeholder' }}
+              {%- endif -%}
+            </span>
+          {%- endcapture -%}
+
+          {%- if g_url != blank -%}
+            <a
+              class="ab-garment-rail__garment"
+              href="{{ g_url }}"
+              data-garment
+              data-index="{{ forloop.index0 }}"
+              data-block-id="{{ block.id }}"
+              data-title="{{ g_title | escape }}"
+              data-url="{{ g_url }}"
+              style="--i: {{ forloop.index0 }};"
+              aria-label="{{ g_title | escape }}{% if g_badge != blank %} — {{ g_badge | escape }}{% endif %}"
+              {{ block.shopify_attributes }}
+            >
+              {{ garment_inner }}
+            </a>
+          {%- else -%}
+            <div
+              class="ab-garment-rail__garment ab-garment-rail__garment--empty"
+              data-garment
+              data-index="{{ forloop.index0 }}"
+              data-block-id="{{ block.id }}"
+              data-title="{{ g_title | escape }}"
+              style="--i: {{ forloop.index0 }};"
+              tabindex="0"
+              {{ block.shopify_attributes }}
+            >
+              {{ garment_inner }}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      <button
+        type="button"
+        class="ab-garment-rail__arrow ab-garment-rail__arrow--next button button-unstyled"
+        data-rail-next
+        aria-label="{{ 'accessibility.slideshow_next' | t | default: 'Next' }}"
+        hidden
+      >
+        <span class="svg-wrapper icon-arrow">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+      </button>
+    </div>
+
+    <div class="ab-garment-rail__detail">
+      <a
+        class="ab-garment-rail__title h4"
+        data-rail-title
+        href="{{ first_url | default: section.settings.cta_link }}"
+        aria-live="polite"
+      >
+        {{- first_title -}}
+      </a>
+
+      {%- if section.settings.cta_label != blank -%}
+        <a class="ab-garment-rail__cta" href="{{ section.settings.cta_link | default: '/collections/all' }}">
+          {{- section.settings.cta_label -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</ab-garment-rail>
+
+{% stylesheet %}
+  .ab-garment-rail__inner {
+    width: 100%;
+  }
+
+  /* ---- Eyebrows (Wardrobes eyebrow style) ---- */
+  .ab-garment-rail__eyebrows {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-block-end: 10px;
+  }
+
+  .ab-garment-rail__eyebrow {
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #e7ce93;
+  }
+
+  .ab-garment-rail__eyebrow-sep {
+    width: 1px;
+    height: 12px;
+    background-color: currentcolor;
+    color: #e7ce93;
+    opacity: 0.6;
+  }
+
+  .ab-garment-rail__heading {
+    text-align: center;
+    color: var(--color-foreground);
+    margin-block: 0 8px;
+  }
+
+  /* ---- Stage / rail ---- */
+  .ab-garment-rail__stage {
+    position: relative;
+    perspective: 1200px;
+  }
+
+  .ab-garment-rail__rail {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--rail-top, 14px);
+    height: 12px;
+    border-radius: 6px;
+    z-index: 1;
+    background: var(--rail-grad);
+    box-shadow: 0 7px 14px -6px rgb(0 0 0 / 0.55);
+  }
+
+  /* End caps / brackets at both ends of the rail. */
+  .ab-garment-rail__rail::before,
+  .ab-garment-rail__rail::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    width: 10px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--rail-cap);
+    box-shadow: 0 4px 8px -3px rgb(0 0 0 / 0.5);
+  }
+
+  .ab-garment-rail__rail::before {
+    inset-inline-start: -4px;
+  }
+
+  .ab-garment-rail__rail::after {
+    inset-inline-end: -4px;
+  }
+
+  .ab-garment-rail--brass {
+    --rail-grad: linear-gradient(180deg, #f3e6c0 0%, #dbbf7c 38%, #b8945a 64%, #6e4f28 100%);
+    --rail-cap: linear-gradient(180deg, #e8d6a3, #8a6a38);
+    --hook-color: #e3c98a;
+  }
+
+  .ab-garment-rail--matte_black {
+    --rail-grad: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 45%, #121212 100%);
+    --rail-cap: linear-gradient(180deg, #3a3a3a, #0e0e0e);
+    --hook-color: #d9d4cc;
+  }
+
+  /* ---- Track: single row, centred when it fits, scrolls on overflow ---- */
+  .ab-garment-rail__track {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: clamp(12px, 4vw, 56px);
+    justify-content: safe center;
+    align-items: flex-start;
+    padding-block-start: 6px;
+    padding-block-end: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    transform-style: preserve-3d;
+    transform: rotateY(var(--rail-roty, 0deg));
+    scrollbar-width: none;
+  }
+
+  .ab-garment-rail__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ab-garment-rail__track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+  }
+
+  /* ---- Garment ---- */
+  .ab-garment-rail__garment {
+    flex: 0 0 auto;
+    width: calc(var(--garment-h) * 0.62);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    scroll-snap-align: center;
+    transform-origin: top center;
+    text-decoration: none;
+    color: inherit;
+    outline-offset: 4px;
+  }
+
+  .ab-garment-rail__hook {
+    display: block;
+    width: 72px;
+    height: 42px;
+    margin-block-end: -8px; /* hook curves over the rail bar */
+    color: var(--hook-color);
+    position: relative;
+    z-index: 3;
+  }
+
+  .ab-garment-rail__hook svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .ab-garment-rail__badge {
+    align-self: center;
+    margin-block-start: 2px;
+    padding: 4px 8px;
+    font-family: var(--font-body--family);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f3e6c0;
+    background-color: #16100d;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.25);
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .ab-garment-rail__img-wrap {
+    display: block;
+    width: 100%;
+    margin-block-start: 6px;
+    transition: transform 0.4s ease, filter 0.4s ease;
+  }
+
+  .ab-garment-rail__img {
+    display: block;
+    width: 100%;
+    height: var(--garment-h);
+    object-fit: contain;
+    object-position: center top;
+  }
+
+  .ab-garment-rail__img--placeholder {
+    opacity: 0.4;
+  }
+
+  /* ---- Active / hover lift ---- */
+  .ab-garment-rail__garment.is-active .ab-garment-rail__img-wrap {
+    transform: translateY(-4px);
+    filter: drop-shadow(0 18px 20px rgb(0 0 0 / 0.4));
+  }
+
+  /* ---- Detail (active title) + CTA ---- */
+  .ab-garment-rail__detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-block-start: 24px;
+    text-align: center;
+  }
+
+  .ab-garment-rail__title {
+    color: var(--color-foreground);
+    text-decoration: none;
+    transition: opacity 0.18s ease, color 0.2s ease;
+    min-height: 1em;
+  }
+
+  .ab-garment-rail__title:hover {
+    color: var(--ab-gold);
+  }
+
+  .ab-garment-rail__title.is-swapping {
+    opacity: 0;
+  }
+
+  /* AB outline/secondary button: transparent, cream border + text, gold on hover,
+     uppercase + tracked (matches AB's square, uppercase button convention). */
+  .ab-garment-rail__cta {
+    display: inline-grid;
+    align-content: center;
+    width: fit-content;
+    padding: 14px 28px;
+    font-family: var(--font-accent--family);
+    font-size: var(--font-paragraph--size);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--color-foreground);
+    border-radius: 0;
+    cursor: pointer;
+    transition: color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .ab-garment-rail__cta:hover {
+    color: var(--ab-gold);
+    box-shadow: inset 0 0 0 1px var(--ab-gold);
+  }
+
+  /* ---- Arrows (only shown when overflowing; desktop fine pointers) ---- */
+  .ab-garment-rail__arrow {
+    display: none;
+    position: absolute;
+    top: var(--rail-top, 14px);
+    z-index: 4;
+    transform: translateY(-25%);
+  }
+
+  .ab-garment-rail__arrow--prev {
+    inset-inline-start: 0;
+  }
+
+  .ab-garment-rail__arrow--next {
+    inset-inline-end: 0;
+  }
+
+  .ab-garment-rail__arrow[disabled] {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  @media (min-width: 990px) and (hover: hover) {
+    .ab-garment-rail__arrow:not([hidden]) {
+      display: inline-flex;
+    }
+  }
+
+  /* ---- Mobile: scale garments to ~65% ---- */
+  @media screen and (max-width: 749px) {
+    .ab-garment-rail__img {
+      height: calc(var(--garment-h) * 0.65);
+    }
+
+    .ab-garment-rail__garment {
+      width: calc(var(--garment-h) * 0.62 * 0.65);
+    }
+
+    .ab-garment-rail__track {
+      gap: 20px;
+    }
+  }
+
+  /* ---- Motion (only when the user hasn't asked to reduce it) ---- */
+  @media (prefers-reduced-motion: no-preference) {
+    .ab-garment-rail__garment {
+      transition: rotate 0.4s ease;
+    }
+
+    .ab-garment-rail--observe .ab-garment-rail__garment {
+      opacity: 0;
+      translate: 0 -28px;
+      transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease,
+        rotate 0.4s ease;
+      transition-delay: calc(var(--i) * 70ms);
+    }
+
+    .ab-garment-rail--observe.is-in .ab-garment-rail__garment {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    /* Damped swing around the hook on hover / focus / active. */
+    .ab-garment-rail[data-sway='true'] .ab-garment-rail__garment:hover,
+    .ab-garment-rail[data-sway='true'] .ab-garment-rail__garment:focus-visible,
+    .ab-garment-rail[data-sway='true'] .ab-garment-rail__garment.is-active {
+      animation: ab-garment-swing 1.2s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    /* Neighbours nudge away. */
+    .ab-garment-rail__garment:hover + .ab-garment-rail__garment {
+      rotate: -2deg;
+    }
+
+    .ab-garment-rail__garment:has(+ .ab-garment-rail__garment:hover) {
+      rotate: 2deg;
+    }
+  }
+
+  @keyframes ab-garment-swing {
+    0% { rotate: 0deg; }
+    20% { rotate: 6deg; }
+    45% { rotate: -4deg; }
+    70% { rotate: 2deg; }
+    100% { rotate: 0deg; }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('ab-garment-rail')) {
+    class AbGarmentRail extends HTMLElement {
+      connectedCallback() {
+        if (this.__init) return;
+        this.__init = true;
+
+        this.track = this.querySelector('[data-rail-track]');
+        this.stage = this.querySelector('[data-rail-stage]');
+        this.titleEl = this.querySelector('[data-rail-title]');
+        this.prevBtn = this.querySelector('[data-rail-prev]');
+        this.nextBtn = this.querySelector('[data-rail-next]');
+        this.garments = Array.prototype.slice.call(this.querySelectorAll('[data-garment]'));
+        if (!this.track || !this.garments.length) return;
+
+        var mm = window.matchMedia;
+        this.reduce = mm && mm('(prefers-reduced-motion: reduce)').matches;
+        this.fine = mm && mm('(hover: hover) and (pointer: fine)').matches;
+        this.coarse = mm && mm('(hover: none)').matches;
+        this.activeIndex = 0;
+
+        this.updateArrows = this.updateArrows.bind(this);
+
+        this.wireGarments();
+        this.wireDrag();
+        this.wireArrows();
+
+        this.track.addEventListener('scroll', this.updateArrows, { passive: true });
+        if ('ResizeObserver' in window) {
+          this.ro = new ResizeObserver(this.updateArrows);
+          this.ro.observe(this.track);
+        } else {
+          window.addEventListener('resize', this.updateArrows);
+        }
+        this.updateArrows();
+
+        if (!this.reduce) {
+          this.wireParallax();
+          this.wireEntrance();
+        }
+        this.wireEditor();
+      }
+
+      disconnectedCallback() {
+        if (this.ro) this.ro.disconnect();
+        if (this.io) this.io.disconnect();
+      }
+
+      setActive(index, scroll) {
+        if (index < 0 || index >= this.garments.length) return;
+        this.activeIndex = index;
+        for (var i = 0; i < this.garments.length; i++) {
+          var on = i === index;
+          this.garments[i].classList.toggle('is-active', on);
+          if (on) this.garments[i].setAttribute('aria-current', 'true');
+          else this.garments[i].removeAttribute('aria-current');
+        }
+        var g = this.garments[index];
+        var title = g.getAttribute('data-title') || '';
+        var url = g.getAttribute('data-url') || '';
+        if (this.titleEl) {
+          var self = this;
+          this.titleEl.classList.add('is-swapping');
+          window.setTimeout(function () {
+            self.titleEl.textContent = title;
+            if (url) self.titleEl.setAttribute('href', url);
+            self.titleEl.classList.remove('is-swapping');
+          }, 180);
+        }
+        if (scroll) this.ensureVisible(g);
+      }
+
+      ensureVisible(g) {
+        var left = g.offsetLeft - (this.track.clientWidth - g.clientWidth) / 2;
+        this.track.scrollTo({ left: left, behavior: this.reduce ? 'auto' : 'smooth' });
+      }
+
+      wireGarments() {
+        var self = this;
+        this.garments.forEach(function (g, idx) {
+          if (self.fine) {
+            g.addEventListener('pointerenter', function (e) {
+              if (e.pointerType && e.pointerType !== 'mouse') return;
+              self.setActive(idx, false);
+            });
+          }
+          // Keyboard focus = active.
+          g.addEventListener('focusin', function () {
+            self.setActive(idx, true);
+          });
+          // Click: suppress after a drag; on touch, first tap selects, second opens.
+          g.addEventListener('click', function (e) {
+            if (self.didDrag) {
+              e.preventDefault();
+              return;
+            }
+            if (self.coarse && self.activeIndex !== idx) {
+              e.preventDefault();
+              self.setActive(idx, true);
+            }
+          });
+        });
+      }
+
+      // Drag-to-scroll with the mouse; a drag must not fire a click.
+      wireDrag() {
+        var self = this;
+        var down = false;
+        var startX = 0;
+        var startScroll = 0;
+
+        this.track.addEventListener('pointerdown', function (e) {
+          if (e.pointerType !== 'mouse') return; // touch uses native scroll
+          down = true;
+          self.didDrag = false;
+          startX = e.clientX;
+          startScroll = self.track.scrollLeft;
+        });
+
+        window.addEventListener('pointermove', function (e) {
+          if (!down) return;
+          var dx = e.clientX - startX;
+          if (Math.abs(dx) > 4) {
+            self.didDrag = true;
+            self.track.classList.add('is-dragging');
+          }
+          self.track.scrollLeft = startScroll - dx;
+        });
+
+        window.addEventListener('pointerup', function () {
+          if (!down) return;
+          down = false;
+          self.track.classList.remove('is-dragging');
+          // Clear the drag flag after the click event has had a chance to fire.
+          window.setTimeout(function () {
+            self.didDrag = false;
+          }, 0);
+          self.updateArrows();
+        });
+      }
+
+      wireArrows() {
+        var self = this;
+        if (this.prevBtn) this.prevBtn.addEventListener('click', function () { self.scrollByStep(-1); });
+        if (this.nextBtn) this.nextBtn.addEventListener('click', function () { self.scrollByStep(1); });
+      }
+
+      step() {
+        var g = this.garments[0];
+        if (!g) return this.track.clientWidth;
+        var styles = getComputedStyle(this.track);
+        var gap = parseFloat(styles.columnGap || styles.gap) || 0;
+        return g.getBoundingClientRect().width + gap;
+      }
+
+      scrollByStep(dir) {
+        this.track.scrollBy({ left: dir * this.step(), behavior: this.reduce ? 'auto' : 'smooth' });
+      }
+
+      updateArrows() {
+        var t = this.track;
+        var overflowing = t.scrollWidth - t.clientWidth > 1;
+        var atStart = t.scrollLeft <= 1;
+        var atEnd = t.scrollLeft >= t.scrollWidth - t.clientWidth - 1;
+        if (this.prevBtn) {
+          this.prevBtn.hidden = !overflowing;
+          this.prevBtn.disabled = atStart;
+        }
+        if (this.nextBtn) {
+          this.nextBtn.hidden = !overflowing;
+          this.nextBtn.disabled = atEnd;
+        }
+      }
+
+      // Pointer-x parallax: ease a shared rotateY on the track (separate from the
+      // garments' `rotate` swing so they never conflict).
+      wireParallax() {
+        if (!this.fine || !this.stage) return;
+        var self = this;
+        var target = 0;
+        var current = 0;
+        var raf = null;
+
+        function tick() {
+          current += (target - current) * 0.12;
+          if (Math.abs(target - current) < 0.01) current = target;
+          self.track.style.setProperty('--rail-roty', current.toFixed(2) + 'deg');
+          if (current !== target) {
+            raf = window.requestAnimationFrame(tick);
+          } else {
+            raf = null;
+          }
+        }
+        function schedule() {
+          if (!raf) raf = window.requestAnimationFrame(tick);
+        }
+
+        this.stage.addEventListener('pointermove', function (e) {
+          if (e.pointerType && e.pointerType !== 'mouse') return;
+          var rect = self.stage.getBoundingClientRect();
+          var ratio = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 .. 0.5
+          target = ratio * 6; // up to ~3deg each way
+          schedule();
+        });
+        this.stage.addEventListener('pointerleave', function () {
+          target = 0;
+          schedule();
+        });
+      }
+
+      wireEntrance() {
+        if (!('IntersectionObserver' in window)) return;
+        var self = this;
+        this.classList.add('ab-garment-rail--observe');
+        this.io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                self.classList.add('is-in');
+                self.io.disconnect();
+              }
+            });
+          },
+          { threshold: 0.15 }
+        );
+        this.io.observe(this);
+      }
+
+      // Theme editor: selecting a garment block scrolls it into view + activates it.
+      wireEditor() {
+        if (!window.Shopify || !window.Shopify.designMode) return;
+        var self = this;
+        document.addEventListener('shopify:block:select', function (e) {
+          var g = self.querySelector('[data-block-id="' + e.detail.blockId + '"]');
+          if (!g) return;
+          var idx = parseInt(g.getAttribute('data-index'), 10) || 0;
+          self.setActive(idx, true);
+        });
+      }
+    }
+
+    customElements.define('ab-garment-rail', AbGarmentRail);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "AB garment rail",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    { "type": "inline_richtext", "id": "eyebrow", "label": "Eyebrow", "default": "NEW COLLECTION" },
+    { "type": "inline_richtext", "id": "eyebrow_secondary", "label": "Secondary eyebrow", "default": "COUTURE" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    { "type": "text", "id": "cta_label", "label": "CTA label", "default": "Shop the collection" },
+    { "type": "url", "id": "cta_link", "label": "CTA link", "default": "/collections/all" },
+    {
+      "type": "select",
+      "id": "rail_style",
+      "label": "Rail style",
+      "default": "brass",
+      "options": [
+        { "value": "brass", "label": "Brass" },
+        { "value": "matte_black", "label": "Matte black" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "garment_height",
+      "label": "Garment height",
+      "min": 280,
+      "max": 560,
+      "step": 10,
+      "unit": "px",
+      "default": 420
+    },
+    { "type": "checkbox", "id": "sway_on_hover", "label": "Sway on hover", "default": true },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "default": "full-width",
+      "options": [
+        { "value": "page-width", "label": "Page" },
+        { "value": "full-width", "label": "Full" }
+      ]
+    },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#241A14" },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    }
+  ],
+  "blocks": [
+    {
+      "type": "garment",
+      "name": "Garment",
+      "limit": 16,
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product" },
+        {
+          "type": "image_picker",
+          "id": "cutout_image",
+          "label": "Cutout image",
+          "info": "Transparent PNG of the garment on a hanger. Overrides the product image."
+        },
+        {
+          "type": "text",
+          "id": "badge_override",
+          "label": "Badge",
+          "info": "e.g. NEW, ONLY 3 LEFT. Leave empty for an automatic badge."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_hanger",
+          "label": "Show hanger",
+          "default": true,
+          "info": "Draws an SVG hanger when the cutout has none."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Garment rail",
+      "blocks": [
+        { "type": "garment" },
+        { "type": "garment" },
+        { "type": "garment" },
+        { "type": "garment" },
+        { "type": "garment" },
+        { "type": "garment" }
+      ]
+    }
+  ]
+}
+{% endschema %}
