@@ -15,7 +15,7 @@
       "type": "divider",
       "name": "t:names.divider_section",
       "settings": {
-        "background_color": "#16100D",
+        "background_color": "#16100d",
         "divider_color": "",
         "section_width": "full-width",
         "thickness": 1,
@@ -79,14 +79,14 @@
           "type": "menu",
           "name": "t:names.menu",
           "settings": {
-            "menu": "main-menu-copy",
+            "menu": "footer",
             "heading": "Menu",
             "menu_spacing": 8,
             "show_as_accordion": true,
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#B5A493",
+            "text_color": "#b5a493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -107,7 +107,7 @@
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#B5A493",
+            "text_color": "#b5a493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -128,7 +128,7 @@
             "accordion_icon": "caret",
             "accordion_dividers": false,
             "background_color": "",
-            "text_color": "#B5A493",
+            "text_color": "#b5a493",
             "heading_preset": "h6",
             "link_preset": "paragraph",
             "padding-block-start": 0,
@@ -172,7 +172,7 @@
         "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
-        "background_color": "#16100D",
+        "background_color": "#16100d",
         "video_position": "cover",
         "background_image_position": "cover",
         "toggle_overlay": false,
@@ -192,7 +192,7 @@
       "type": "divider",
       "name": "t:names.divider_section",
       "settings": {
-        "background_color": "#16100D",
+        "background_color": "#16100d",
         "divider_color": "",
         "section_width": "full-width",
         "thickness": 1,
@@ -438,7 +438,7 @@
           "type": "footer-copyright",
           "settings": {
             "show_powered_by": false,
-            "text_color": "#B5A493",
+            "text_color": "#b5a493",
             "font_size": "0.75rem",
             "case": "none"
           },
@@ -447,7 +447,7 @@
         "block_93b9c4ee33cf": {
           "type": "footer-policy-list",
           "settings": {
-            "text_color": "#B5A493",
+            "text_color": "#b5a493",
             "font_size": "0.75rem",
             "case": "none"
           },
@@ -482,7 +482,7 @@
       "settings": {
         "section_width": "page-width",
         "gap": 24,
-        "background_color": "#16100D",
+        "background_color": "#16100d",
         "divider_thickness": 1,
         "divider_color": "",
         "padding-block-start": 20,
@@ -493,7 +493,6 @@
       "type": "ab-campaign-popup",
       "settings": {
         "enable": true,
-        "image": "",
         "eyebrow": "",
         "heading": "10% off your first piece",
         "body": "<p>Join the list for first access to new pieces and a welcome gift.</p>",
@@ -511,6 +510,7 @@
         "delay_min": 5,
         "delay_max": 8,
         "frequency_days": 7,
+        "background_color": "#241a14",
         "max_width": 440
       }
     }
