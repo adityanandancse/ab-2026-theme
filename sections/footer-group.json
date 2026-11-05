@@ -488,6 +488,31 @@
         "padding-block-start": 20,
         "padding-block-end": 20
       }
+    },
+    "ab_campaign_popup": {
+      "type": "ab-campaign-popup",
+      "settings": {
+        "enable": true,
+        "image": "",
+        "eyebrow": "",
+        "heading": "10% off your first piece",
+        "body": "<p>Join the list for first access to new pieces and a welcome gift.</p>",
+        "legal_text": "<p>By signing up you agree to receive emails from Achin Bindlish. Unsubscribe anytime. See our <a href=\"/policies/privacy-policy\">privacy policy</a>.</p>",
+        "discount_code": "WELCOME10",
+        "button_label": "Get my 10%",
+        "success_heading": "You're in",
+        "success_text": "<p>Here is your code — use it at checkout.</p>",
+        "apply_label": "Shop now",
+        "redirect_to": "/collections/all",
+        "whatsapp_optin": true,
+        "whatsapp_label": "Also send me updates on WhatsApp",
+        "customer_tags": "newsletter,popup-welcome10",
+        "show_to": "new",
+        "delay_min": 5,
+        "delay_max": 8,
+        "frequency_days": 7,
+        "max_width": 440
+      }
     }
   },
   "order": [
@@ -495,6 +520,7 @@
     "section_Ei9yQP",
     "divider_Fp8gxb",
     "migrated_footer_content",
-    "footer_utilities"
+    "footer_utilities",
+    "ab_campaign_popup"
   ]
 }

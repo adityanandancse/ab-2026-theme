@@ -1,0 +1,917 @@
+{%- comment -%}
+  AB campaign popup — a native AB 2026 signup overlay rebuilt from the live
+  "WELCOME10" campaign popup (values copied from the live theme; code is new).
+
+  Every signup posts through Shopify's native {% form 'customer' %}, so it
+  creates/updates a Customer with email-marketing consent (lands in Admin →
+  Customers as a subscriber). No app, no external script, no third-party call.
+
+  Rendered globally from the Footer section group (where AB keeps its other
+  global overlay — the floating WhatsApp button), so it is editable in the
+  theme editor. Behaviour lives in a scoped <ab-campaign-popup> custom element;
+  the overlay itself is a native <dialog> (top layer, focus trap, Esc).
+
+  Colour follows AB sections exactly like sections/ab-celebrity-looks.liquid:
+  a background_color setting fed through the contrast-override snippet, which
+  emits scoped --color-background / --color-foreground on .color-custom-{id}.
+  Buttons and inputs keep AB's global palette vars (primary button gold
+  #DBBF7C on #241A14). This theme has no color_scheme_group, so no color_scheme
+  setting is used.
+{%- endcomment -%}
+
+{%- liquid
+  assign enabled = section.settings.enable
+  assign render_popup = false
+  if enabled or request.design_mode
+    assign render_popup = true
+  endif
+
+  # Never render on cart, password, or customer/account templates (also guarded
+  # client-side). Exclusions are skipped in the editor so the section stays
+  # selectable there.
+  unless request.design_mode
+    if template.name == 'cart' or template.name == 'password'
+      assign render_popup = false
+    endif
+    if template.directory == 'customers'
+      assign render_popup = false
+    endif
+    # "New visitors only" — a logged-in customer is never a new visitor.
+    if section.settings.show_to == 'new' and customer
+      assign render_popup = false
+    endif
+  endunless
+-%}
+
+{%- if render_popup -%}
+  {%- liquid
+    assign discount = section.settings.discount_code | default: 'WELCOME10' | strip
+    assign redirect = section.settings.redirect_to | default: '/collections/all'
+    assign base_tags = section.settings.customer_tags | default: 'newsletter,popup-welcome10'
+    assign form_id = 'AbCampaignPopupForm-' | append: section.id
+
+    assign cp_posted = false
+    assign cp_error = ''
+
+    if section.settings.background_color != blank
+      render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+    endif
+  -%}
+
+  {%- capture cp_config -%}
+    {
+      "delayMin": {{ section.settings.delay_min | default: 5 | json }},
+      "delayMax": {{ section.settings.delay_max | default: 8 | json }},
+      "frequencyDays": {{ section.settings.frequency_days | default: 7 | json }},
+      "showTo": {{ section.settings.show_to | default: 'new' | json }},
+      "enabled": {{ enabled | default: false | json }},
+      "designMode": {{ request.design_mode | default: false | json }},
+      "ns": {{ discount | downcase | json }},
+      "defaultPhone": "+91"
+    }
+  {%- endcapture -%}
+
+  <ab-campaign-popup
+    class="ab-campaign-popup"
+    id="AbCampaignPopup-{{ section.id }}"
+    data-section-id="{{ section.id }}"
+    data-config='{{ cp_config | strip_newlines }}'
+    style="--ab-cp-max: {{ section.settings.max_width | default: 440 }}px;"
+  >
+    <dialog
+      class="ab-campaign-popup__dialog"
+      aria-labelledby="AbCampaignPopup-heading-{{ section.id }}"
+    >
+      <div
+        class="ab-campaign-popup__panel{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% if section.settings.image != blank %} ab-campaign-popup__panel--has-media{% endif %}"
+        data-cp-panel
+      >
+        <button
+          type="button"
+          class="ab-campaign-popup__close"
+          data-cp-close
+          aria-label="Close"
+        >
+          <span class="svg-wrapper">{{ 'icon-close.svg' | inline_asset_content }}</span>
+        </button>
+
+        {%- if section.settings.image != blank -%}
+          <div class="ab-campaign-popup__media">
+            {{
+              section.settings.image
+              | image_url: width: 900
+              | image_tag:
+                loading: 'lazy',
+                sizes: '(min-width: 750px) 280px, 100vw',
+                widths: '440, 660, 900',
+                class: 'ab-campaign-popup__image',
+                alt: section.settings.image.alt
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="ab-campaign-popup__body" data-cp-body>
+          {%- comment -%} ---------- OFFER / FORM STATE ---------- {%- endcomment -%}
+          <div class="ab-campaign-popup__state" data-cp-state="offer">
+            {%- if section.settings.eyebrow != blank -%}
+              <p class="ab-campaign-popup__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+            {%- endif -%}
+
+            {%- if section.settings.heading != blank -%}
+              <h2 class="ab-campaign-popup__heading h4" id="AbCampaignPopup-heading-{{ section.id }}">
+                {{- section.settings.heading | escape -}}
+              </h2>
+            {%- endif -%}
+
+            {%- if section.settings.body != blank -%}
+              <div class="ab-campaign-popup__text rte">{{ section.settings.body }}</div>
+            {%- endif -%}
+
+            {%- form 'customer', id: form_id, class: 'ab-campaign-popup__form' -%}
+              {%- liquid
+                if form.posted_successfully?
+                  assign cp_posted = true
+                endif
+                if form.errors
+                  assign cp_error = form.errors.translated_fields.email | default: 'Email'
+                  assign cp_error = cp_error | append: ' ' | append: form.errors.messages.email | default: form.errors.messages.form
+                endif
+              -%}
+
+              {%- if cp_posted -%}
+                {%- comment -%} Marker: JS only reopens success if WE posted. {%- endcomment -%}
+                <input type="hidden" data-cp-posted value="1">
+              {%- else -%}
+                {%- if form.errors -%}
+                  <p class="ab-campaign-popup__alert" data-cp-alert role="alert">{{ cp_error | strip }}</p>
+                {%- endif -%}
+
+                <input type="hidden" name="contact[tags]" value="{{ base_tags | escape }}" data-cp-tags>
+
+                <div class="ab-campaign-popup__field">
+                  <label class="ab-campaign-popup__label" for="AbCpName-{{ section.id }}">Name</label>
+                  <input
+                    type="text"
+                    id="AbCpName-{{ section.id }}"
+                    class="ab-campaign-popup__input"
+                    name="contact[first_name]"
+                    autocomplete="given-name"
+                  >
+                </div>
+
+                <div class="ab-campaign-popup__field" data-cp-field="email">
+                  <label class="ab-campaign-popup__label" for="AbCpEmail-{{ section.id }}">Email *</label>
+                  <input
+                    type="email"
+                    id="AbCpEmail-{{ section.id }}"
+                    class="ab-campaign-popup__input"
+                    name="contact[email]"
+                    autocomplete="email"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    required
+                    data-cp-email
+                  >
+                  <p class="ab-campaign-popup__error" data-cp-err hidden></p>
+                </div>
+
+                {%- if section.settings.whatsapp_optin -%}
+                  <label class="ab-campaign-popup__optin">
+                    <input type="checkbox" data-cp-whatsapp>
+                    <span>{{ section.settings.whatsapp_label | default: 'Also send me updates on WhatsApp' | escape }}</span>
+                  </label>
+
+                  <div class="ab-campaign-popup__field" data-cp-field="phone" hidden>
+                    <label class="ab-campaign-popup__label" for="AbCpPhone-{{ section.id }}">WhatsApp number</label>
+                    {%- comment -%}
+                      No name attribute: the storefront customer (newsletter) form
+                      does not persist contact[phone] to the customer record, so JS
+                      reads this value and stores the E.164 number as a customer tag.
+                    {%- endcomment -%}
+                    <input
+                      type="tel"
+                      id="AbCpPhone-{{ section.id }}"
+                      class="ab-campaign-popup__input"
+                      autocomplete="tel"
+                      inputmode="tel"
+                      placeholder="+91"
+                      data-cp-phone
+                    >
+                    <p class="ab-campaign-popup__error" data-cp-err hidden></p>
+                  </div>
+                {%- endif -%}
+
+                <button type="submit" class="button ab-campaign-popup__submit" data-cp-submit>
+                  {{- section.settings.button_label | default: 'Get my 10%' | escape -}}
+                </button>
+
+                {%- if section.settings.legal_text != blank -%}
+                  <div class="ab-campaign-popup__legal rte">{{ section.settings.legal_text }}</div>
+                {%- endif -%}
+              {%- endif -%}
+            {%- endform -%}
+          </div>
+
+          {%- comment -%}
+            ---------- SUCCESS STATE ----------
+            The discount code is rendered ONLY after a successful customer post,
+            so it is never present in the DOM before submit.
+          {%- endcomment -%}
+          <div class="ab-campaign-popup__state" data-cp-state="success" {% unless cp_posted %}hidden{% endunless %}>
+            {%- if cp_posted -%}
+              {%- if section.settings.success_heading != blank -%}
+                <h2 class="ab-campaign-popup__heading h4">{{ section.settings.success_heading | escape }}</h2>
+              {%- endif -%}
+              {%- if section.settings.success_text != blank -%}
+                <div class="ab-campaign-popup__text rte">{{ section.settings.success_text }}</div>
+              {%- endif -%}
+
+              <div class="ab-campaign-popup__code">
+                <span class="ab-campaign-popup__code-value" data-cp-code>{{ discount | escape }}</span>
+                <button type="button" class="button-secondary ab-campaign-popup__copy" data-cp-copy>Copy</button>
+              </div>
+              <p class="ab-campaign-popup__copied" data-cp-copied aria-live="polite" hidden>Copied</p>
+
+              <a
+                class="button ab-campaign-popup__apply"
+                href="/discount/{{ discount | url_encode }}?redirect={{ redirect | url_encode }}"
+              >
+                {{- section.settings.apply_label | default: 'Shop now' | escape -}}
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </ab-campaign-popup>
+{%- endif -%}
+
+{% stylesheet %}
+  .ab-campaign-popup {
+    display: contents;
+  }
+
+  /* Full-viewport transparent dialog: the ::backdrop dims the page and clicks on
+     the empty area (target === dialog) close it. The visible surface is .panel. */
+  .ab-campaign-popup__dialog {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100dvh;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .ab-campaign-popup__dialog:not([open]) {
+    display: none;
+  }
+
+  .ab-campaign-popup__dialog::backdrop {
+    background: rgb(22 16 13 / 0.6);
+  }
+
+  .ab-campaign-popup__panel {
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    box-shadow: 0 10px 40px rgb(0 0 0 / 0.25);
+  }
+
+  .ab-campaign-popup__panel *,
+  .ab-campaign-popup__panel *::before,
+  .ab-campaign-popup__panel *::after {
+    box-sizing: border-box;
+  }
+
+  .ab-campaign-popup__close {
+    position: absolute;
+    top: 8px;
+    inset-inline-end: 8px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+
+  .ab-campaign-popup__close:hover {
+    opacity: 1;
+  }
+
+  .ab-campaign-popup__close .svg-wrapper,
+  .ab-campaign-popup__close svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .ab-campaign-popup__media {
+    flex: none;
+  }
+
+  .ab-campaign-popup__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+  }
+
+  .ab-campaign-popup__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 32px 28px;
+    text-align: center;
+  }
+
+  .ab-campaign-popup__eyebrow {
+    margin: 0 0 8px;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-primary, var(--color-foreground));
+  }
+
+  .ab-campaign-popup__heading {
+    margin: 0 0 12px;
+    color: inherit;
+  }
+
+  .ab-campaign-popup__text {
+    margin: 0 0 20px;
+  }
+
+  .ab-campaign-popup__text > :last-child {
+    margin-bottom: 0;
+  }
+
+  .ab-campaign-popup__field {
+    margin: 0 0 14px;
+    text-align: start;
+  }
+
+  .ab-campaign-popup__label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.8125rem;
+  }
+
+  .ab-campaign-popup__input {
+    width: 100%;
+    padding: 14px 16px;
+    border-style: solid;
+    border-width: var(--style-border-width-inputs, 1px);
+    border-radius: var(--style-border-radius-inputs, 0);
+    border-color: var(--color-input-border, var(--color-foreground));
+    background-color: var(--color-input-background, var(--color-background));
+    color: var(--color-input-text, var(--color-foreground));
+  }
+
+  .ab-campaign-popup__optin {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 0.8125rem;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .ab-campaign-popup__optin input {
+    margin-top: 3px;
+  }
+
+  .ab-campaign-popup__submit,
+  .ab-campaign-popup__apply {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .ab-campaign-popup__legal {
+    margin: 14px 0 0;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+
+  .ab-campaign-popup__legal a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .ab-campaign-popup__alert {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+    color: var(--color-foreground);
+    border: 1px solid currentcolor;
+  }
+
+  .ab-campaign-popup__error {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: #b5423b;
+  }
+
+  .ab-campaign-popup__field--invalid .ab-campaign-popup__input {
+    border-color: #b5423b;
+  }
+
+  .ab-campaign-popup__code {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0 0 8px;
+  }
+
+  .ab-campaign-popup__code-value {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 18px;
+    border: 1px dashed var(--color-foreground);
+    font-size: 1.25rem;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    text-transform: uppercase;
+    word-break: break-all;
+  }
+
+  .ab-campaign-popup__copy {
+    flex: 0 0 auto;
+  }
+
+  .ab-campaign-popup__copied {
+    margin: 0 0 14px;
+    font-size: 0.8125rem;
+  }
+
+  /* ---- Desktop (>= 750px): centred modal, image left / form right ---- */
+  @media screen and (min-width: 750px) {
+    .ab-campaign-popup__panel {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100vw - 40px);
+      max-width: var(--ab-cp-max, 440px);
+      max-height: 85dvh;
+    }
+
+    .ab-campaign-popup__panel--has-media {
+      flex-direction: row;
+      max-width: calc(var(--ab-cp-max, 440px) + 260px);
+    }
+
+    .ab-campaign-popup__panel--has-media .ab-campaign-popup__media {
+      flex: 0 0 280px;
+    }
+
+    .ab-campaign-popup__panel--has-media .ab-campaign-popup__image {
+      width: 100%;
+      height: 100%;
+      max-height: none;
+    }
+  }
+
+  /* ---- Mobile (<= 749px): full-width bottom sheet, image on top ---- */
+  @media screen and (max-width: 749px) {
+    .ab-campaign-popup__panel {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: 100%;
+      max-height: 85dvh;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .ab-campaign-popup__image {
+      max-height: 140px;
+    }
+
+    .ab-campaign-popup__body {
+      padding: 24px 20px calc(16px + env(safe-area-inset-bottom));
+    }
+
+    /* >= 16px avoids iOS auto-zoom on focus */
+    .ab-campaign-popup__input {
+      font-size: 16px;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('ab-campaign-popup')) {
+    class AbCampaignPopup extends HTMLElement {
+      connectedCallback() {
+        if (this.__init) return;
+        this.__init = true;
+
+        this.sectionId = this.getAttribute('data-section-id');
+        try {
+          this.cfg = JSON.parse(this.getAttribute('data-config') || '{}');
+        } catch (e) {
+          this.cfg = {};
+        }
+
+        this.dialog = this.querySelector('.ab-campaign-popup__dialog');
+        this.panel = this.querySelector('[data-cp-panel]');
+        this.form = this.querySelector('form');
+        this.offerEl = this.querySelector('[data-cp-state="offer"]');
+        this.successEl = this.querySelector('[data-cp-state="success"]');
+        if (!this.dialog) return;
+
+        this.ns = 'ab_cp_' + (this.cfg.ns || 'welcome10') + '_';
+        this.VISIT_KEY = 'ab_cp_visited';
+        this.wasNewVisitor = !this.lget(this.VISIT_KEY);
+
+        this.onClose = this.close.bind(this, true);
+        this.closeBtn = this.querySelector('[data-cp-close]');
+        if (this.closeBtn) this.closeBtn.addEventListener('click', this.onClose);
+
+        // Backdrop click: a click whose target is the dialog itself (the empty
+        // area around the panel) closes it.
+        this.dialog.addEventListener('click', (e) => {
+          if (e.target === this.dialog) this.close(true);
+        });
+        // Esc fires the native 'cancel' event — remember the dismissal.
+        this.dialog.addEventListener('cancel', (e) => {
+          e.preventDefault();
+          this.close(true);
+        });
+
+        this.wireForm();
+        this.wireCopy();
+
+        // --- Theme editor: never auto-open; open only when this section is selected.
+        if (this.cfg.designMode) {
+          document.addEventListener('shopify:section:select', (e) => {
+            if (e.detail && e.detail.sectionId === this.sectionId) this.open();
+          });
+          document.addEventListener('shopify:section:deselect', (e) => {
+            if (e.detail && e.detail.sectionId === this.sectionId) this.close(false);
+          });
+          return;
+        }
+
+        // --- Returning from a successful / errored customer post.
+        var postedFlag = this.querySelector('[data-cp-posted]');
+        var submitting = this.sget(this.ns + 'submitting');
+        if (postedFlag) {
+          if (submitting) {
+            this.srem(this.ns + 'submitting');
+            this.lset(this.ns + 'signed', '1');
+            this.showSuccess();
+            this.open();
+          }
+          return;
+        }
+        var alert = this.querySelector('[data-cp-alert]');
+        if (alert && submitting) {
+          this.srem(this.ns + 'submitting');
+          var savedEmail = this.sget(this.ns + 'email');
+          if (savedEmail) {
+            var emailInput = this.querySelector('[data-cp-email]');
+            if (emailInput) emailInput.value = savedEmail;
+          }
+          this.open();
+          return;
+        }
+
+        if (!this.enabled() || !this.eligible()) {
+          // Still record the visit so future "new visitor" checks are correct.
+          if (!this.lget(this.VISIT_KEY)) this.lset(this.VISIT_KEY, String(Date.now()));
+          return;
+        }
+        if (!this.lget(this.VISIT_KEY)) this.lset(this.VISIT_KEY, String(Date.now()));
+
+        var dmin = parseFloat(this.cfg.delayMin);
+        if (isNaN(dmin)) dmin = 5;
+        var dmax = parseFloat(this.cfg.delayMax);
+        if (isNaN(dmax)) dmax = 8;
+        if (dmax < dmin) dmax = dmin;
+        var delay = (dmin + Math.random() * (dmax - dmin)) * 1000;
+        this.timer = window.setTimeout(this.tryOpen.bind(this), delay);
+      }
+
+      // ---- storage helpers (every access guarded) ----
+      lget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+      lset(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+      sget(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+      sset(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+      srem(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+
+      enabled() { return this.cfg.enabled !== false; }
+
+      // Path-level exclusions that also guard against client-side navigation.
+      pathBlocked() {
+        var p = (location.pathname || '').toLowerCase();
+        return (
+          p.indexOf('/cart') === 0 ||
+          p.indexOf('/checkout') === 0 ||
+          p.indexOf('/account') === 0 ||
+          p.indexOf('/password') === 0
+        );
+      }
+
+      otherModalOpen() {
+        return !!document.querySelector(
+          'dialog[open]:not(.ab-campaign-popup__dialog), cart-drawer[open], [data-cart-drawer][open], .drawer[aria-hidden="false"], .modal[aria-hidden="false"]'
+        );
+      }
+
+      eligible() {
+        if (this.pathBlocked()) return false;
+        if (this.lget(this.ns + 'signed')) return false;             // signed up → never again
+        var closed = parseInt(this.lget(this.ns + 'dismissed') || '0', 10);
+        if (closed) {
+          var days = parseInt(this.cfg.frequencyDays, 10) || 0;
+          if (days > 0 && Date.now() - closed < days * 86400000) return false;
+        }
+        if (this.cfg.showTo === 'new' && !this.wasNewVisitor) return false;
+        var s = location.search || '';
+        if (s.indexOf('customer_posted') > -1 || s.indexOf('contact_posted') > -1) return false;
+        return true;
+      }
+
+      tryOpen() {
+        if (document.hidden) {
+          var once = () => {
+            document.removeEventListener('visibilitychange', once);
+            this.tryOpen();
+          };
+          document.addEventListener('visibilitychange', once);
+          return;
+        }
+        if (this.otherModalOpen() || this.pathBlocked()) {
+          this.timer = window.setTimeout(this.tryOpen.bind(this), 3000);
+          return;
+        }
+        this.open();
+      }
+
+      open() {
+        if (!this.dialog || this.dialog.open) return;
+        try {
+          this.dialog.showModal();
+        } catch (e) {
+          this.dialog.setAttribute('open', '');
+        }
+      }
+
+      close(remember) {
+        if (!this.dialog || !this.dialog.open) {
+          if (this.dialog) this.dialog.removeAttribute('open');
+          return;
+        }
+        try { this.dialog.close(); } catch (e) { this.dialog.removeAttribute('open'); }
+        if (remember && !this.cfg.designMode) {
+          this.lset(this.ns + 'dismissed', String(Date.now()));
+        }
+      }
+
+      showSuccess() {
+        if (this.offerEl) this.offerEl.hidden = true;
+        if (this.successEl) this.successEl.hidden = false;
+      }
+
+      // ---- form: validation, phone normalise (E.164), tags, submit marker ----
+      wireForm() {
+        if (!this.form || this.form.__wired) return;
+        this.form.__wired = true;
+
+        var self = this;
+        var email = this.form.querySelector('[data-cp-email]');
+        var phone = this.form.querySelector('[data-cp-phone]');
+        var phoneField = this.form.querySelector('[data-cp-field="phone"]');
+        var whatsapp = this.form.querySelector('[data-cp-whatsapp]');
+        var tagsHid = this.form.querySelector('[data-cp-tags]');
+
+        if (whatsapp && phoneField) {
+          whatsapp.addEventListener('change', function () {
+            phoneField.hidden = !whatsapp.checked;
+          });
+        }
+
+        function fieldOf(input) { return input ? input.closest('.ab-campaign-popup__field') : null; }
+        function clearErr(input) {
+          var f = fieldOf(input); if (!f) return;
+          f.classList.remove('ab-campaign-popup__field--invalid');
+          var m = f.querySelector('[data-cp-err]'); if (m) { m.hidden = true; m.textContent = ''; }
+        }
+        function showErr(input, msg) {
+          var f = fieldOf(input); if (!f) return;
+          f.classList.add('ab-campaign-popup__field--invalid');
+          var m = f.querySelector('[data-cp-err]'); if (m) { m.textContent = msg; m.hidden = false; }
+        }
+
+        // +<digits>, default +91 when no country code; returns E.164-ish string.
+        function normPhone(raw) {
+          var v = (raw || '').trim();
+          if (!v) return '';
+          if (v.charAt(0) === '+') {
+            var rest = v.slice(1).replace(/\D/g, '');
+            return rest ? '+' + rest : '';
+          }
+          var d = v.replace(/\D/g, '').replace(/^0+/, '');
+          if (!d) return '';
+          return (self.cfg.defaultPhone || '+91') + d;
+        }
+
+        this.form.addEventListener('submit', function (e) {
+          var firstBad = null;
+
+          if (email) {
+            clearErr(email);
+            var ev = email.value.trim();
+            var ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ev);
+            if (!ev) { showErr(email, 'Please enter your email.'); firstBad = firstBad || email; }
+            else if (!ok) { showErr(email, 'Please enter a valid email.'); firstBad = firstBad || email; }
+          }
+
+          var waOn = whatsapp && whatsapp.checked;
+          if (waOn && phone) {
+            clearErr(phone);
+            var pv = phone.value.trim();
+            if (!pv) { showErr(phone, 'Please enter your WhatsApp number.'); firstBad = firstBad || phone; }
+            else {
+              var np = normPhone(pv);
+              if (np.replace(/\D/g, '').length < 10) {
+                showErr(phone, 'Enter at least 10 digits.');
+                firstBad = firstBad || phone;
+              } else {
+                phone.value = np;
+              }
+            }
+          }
+
+          // Tags: the newsletter customer form does NOT store contact[phone] on
+          // the customer, so we mark consent with a tag and store the number as a
+          // tag too (the only storefront-form way to persist it on the customer).
+          if (tagsHid && waOn) {
+            var extra = ['whatsapp-optin'];
+            if (phone && phone.value) extra.push(phone.value);
+            var cur = tagsHid.value;
+            for (var i = 0; i < extra.length; i++) {
+              if (cur.indexOf(extra[i]) === -1) cur += ',' + extra[i];
+            }
+            tagsHid.value = cur;
+          }
+
+          if (firstBad) {
+            e.preventDefault();
+            try { firstBad.focus(); } catch (err) {}
+            return;
+          }
+
+          // Valid → mark that WE are posting (so the reload reopens our popup) and
+          // preserve the email in case of a server error.
+          self.sset(self.ns + 'submitting', '1');
+          if (email) self.sset(self.ns + 'email', email.value.trim());
+        });
+      }
+
+      wireCopy() {
+        var copyBtn = this.querySelector('[data-cp-copy]');
+        var codeVal = this.querySelector('[data-cp-code]');
+        var copied = this.querySelector('[data-cp-copied]');
+        if (!copyBtn || !codeVal) return;
+        copyBtn.addEventListener('click', function () {
+          var code = (codeVal.textContent || '').trim();
+          function done() { if (copied) copied.hidden = false; }
+          function fallback() {
+            try {
+              var ta = document.createElement('textarea');
+              ta.value = code;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'absolute';
+              ta.style.left = '-9999px';
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              done();
+            } catch (err) {}
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(done, fallback);
+          } else {
+            fallback();
+          }
+        });
+      }
+    }
+
+    customElements.define('ab-campaign-popup', AbCampaignPopup);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "AB campaign popup",
+  "tag": "section",
+  "settings": [
+    { "type": "checkbox", "id": "enable", "label": "Enable", "default": false },
+
+    { "type": "header", "content": "Content" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Welcome offer" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "10% off your first piece" },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Text",
+      "default": "<p>Join the list for first access to new pieces and a welcome gift.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "legal_text",
+      "label": "Legal text",
+      "default": "<p>By signing up you agree to receive emails from Achin Bindlish. Unsubscribe anytime. See our <a href=\"/policies/privacy-policy\">privacy policy</a>.</p>"
+    },
+
+    { "type": "header", "content": "Offer" },
+    { "type": "text", "id": "discount_code", "label": "Discount code", "default": "WELCOME10" },
+    { "type": "text", "id": "button_label", "label": "Form button label", "default": "Get my 10%" },
+    { "type": "text", "id": "success_heading", "label": "Success heading", "default": "You're in" },
+    {
+      "type": "richtext",
+      "id": "success_text",
+      "label": "Success text",
+      "default": "<p>Here is your code — use it at checkout.</p>"
+    },
+    { "type": "text", "id": "apply_label", "label": "Apply / shop button label", "default": "Shop now" },
+    {
+      "type": "text",
+      "id": "redirect_to",
+      "label": "Apply code redirect",
+      "default": "/collections/all",
+      "info": "The code auto-applies via /discount/CODE?redirect=…"
+    },
+
+    { "type": "header", "content": "Form" },
+    { "type": "checkbox", "id": "whatsapp_optin", "label": "Show WhatsApp opt-in", "default": true },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "WhatsApp opt-in label",
+      "default": "Also send me updates on WhatsApp"
+    },
+    {
+      "type": "text",
+      "id": "customer_tags",
+      "label": "Customer tags",
+      "default": "newsletter,popup-welcome10",
+      "info": "Comma-separated, added to the customer on signup."
+    },
+
+    { "type": "header", "content": "Timing & targeting" },
+    {
+      "type": "select",
+      "id": "show_to",
+      "label": "Show to",
+      "default": "new",
+      "options": [
+        { "value": "new", "label": "New visitors only" },
+        { "value": "all", "label": "Everyone" }
+      ]
+    },
+    { "type": "range", "id": "delay_min", "min": 0, "max": 60, "step": 1, "unit": "s", "label": "Minimum delay", "default": 5 },
+    { "type": "range", "id": "delay_max", "min": 0, "max": 60, "step": 1, "unit": "s", "label": "Maximum delay", "default": 8 },
+    {
+      "type": "range",
+      "id": "frequency_days",
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "unit": "d",
+      "label": "Days before showing again",
+      "default": 7,
+      "info": "After a visitor dismisses it. 0 = show again next visit."
+    },
+
+    { "type": "header", "content": "Look" },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#241A14" },
+    { "type": "range", "id": "max_width", "min": 360, "max": 720, "step": 10, "unit": "px", "label": "Max width", "default": 440 }
+  ],
+  "presets": [
+    { "name": "AB campaign popup" }
+  ]
+}
+{% endschema %}
