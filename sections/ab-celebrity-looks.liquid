@@ -232,6 +232,45 @@
       display: none;
     }
   }
+
+  /* Mobile (<750px): match the Wardrobes collection-list carousel exactly.
+   * Wardrobes mobile values copied: full-bleed row (force-full-width), card
+   * width clamp(150px, 60cqw, 450px) where the container is the full-viewport
+   * row (= 60vw); gap 12px (columns_gap); start/end gutter and snap padding =
+   * --util-page-margin-offset; scroll-snap-align: start; next card peeks; the
+   * 4/5 portrait ratio + white rounded frame already apply at every breakpoint.
+   * Start-aligned (NOT centred). Arrows are already hidden on touch (only shown
+   * at >=990px with hover). Desktop (>=990px) and tablet (750-989px, where
+   * Wardrobes shows its 4-up grid) are untouched. */
+  @media screen and (max-width: 749px) {
+    .ab-celebrity-looks__row {
+      justify-content: flex-start;
+      width: 100vw;
+      margin-inline: calc(50% - 50vw);
+      padding-inline: var(--util-page-margin-offset, 20px);
+      scroll-padding-inline-start: var(--util-page-margin-offset, 20px);
+    }
+
+    /* Undo the desktop auto-margin centring so the first card starts at the gutter. */
+    .ab-celebrity-looks__row > :first-child {
+      margin-inline-start: 0;
+    }
+
+    .ab-celebrity-looks__row > :last-child {
+      margin-inline-end: 0;
+    }
+
+    .ab-look {
+      width: clamp(150px, 60vw, 450px);
+      container-type: inline-size;
+    }
+
+    /* Hotspot dots scale with the card (container query on the look); the dot
+     * centre stays at the same x/y %. Overrides the 36px set inline on the block. */
+    .ab-look__media {
+      --hotspot-size: clamp(18px, 7cqi, 32px) !important;
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}
