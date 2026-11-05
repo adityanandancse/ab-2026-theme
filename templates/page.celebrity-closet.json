@@ -189,13 +189,42 @@
     "worn_by_celebrities": {
       "type": "ab-celebrity-looks",
       "blocks": {
+        "eyebrow": {
+          "type": "text",
+          "static": true,
+          "settings": {
+            "text": "<p>AS SEEN ON</p>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "custom",
+            "font": "var(--font-body--family)",
+            "font_size": "0.75rem",
+            "line_height": "normal",
+            "letter_spacing": "loose",
+            "case": "uppercase",
+            "wrap": "pretty",
+            "text_color": "#e7ce93",
+            "padding-block-end": 8
+          }
+        },
         "heading": {
           "type": "text",
           "static": true,
           "settings": {
-            "text": "<h4>Worn by Celebrities</h4>",
+            "text": "<h2>Worn by Celebrities</h2>",
+            "width": "100%",
+            "max_width": "normal",
             "alignment": "center",
-            "type_preset": "h4"
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "#eae6e6",
+            "padding-block-end": 8
           }
         },
         "look_1": {
@@ -265,8 +294,8 @@
         "bullseye_color": "#ffffff",
         "product_title_gap": 8,
         "section_width": "page-width",
-        "padding-block-start": 40,
-        "padding-block-end": 40
+        "padding-block-start": 15,
+        "padding-block-end": 15
       }
     }
   },

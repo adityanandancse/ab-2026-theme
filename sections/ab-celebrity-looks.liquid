@@ -1,17 +1,23 @@
 {%- comment -%}
-  Celebrity looks — renders two (or more) "looks" side by side in a centred grid
-  whose column width matches a product card in the collection grid (4-per-row of
-  the narrow page). Each look reuses the theme's _hotspot-product block, so the
-  hotspot dots and popovers are driven by the existing product-hotspot.js and the
-  global .hotspot* / .hotspots-container / .hotspots__background-image styles.
+  Celebrity looks — all looks render in ONE horizontal row. The row is centred
+  when the looks fit and scrolls horizontally (never wraps) when they overflow.
+  Desktop gets prev/next arrows (shown only on overflow); touch uses native scroll.
 
-  Background/text follow the same pattern as collection-list / media-with-content:
-  an explicit background_color fed through the contrast-override snippet, which
-  emits scoped --color-* vars on .color-custom-{section.id}; the .section-background
-  div paints --color-background. (This theme does not use color-scheme-N classes.)
+  Each look reuses the theme's _hotspot-product block, so the hotspot dots and
+  popovers are driven by the existing product-hotspot.js. That script clamps each
+  dialog inside its look's own box (its parentElement = .hotspots-container), and
+  every look box sits inside the track's content box, so the dialogs are NOT
+  clipped by the track's overflow. We also close any open popover on track scroll.
 
-  Images keep their natural aspect ratio (no cover cropping) so hotspot positions
-  stay aligned. The look media/containers do not clip, so popovers are not cut off.
+  Background/text follow the collection-list / media-with-content pattern: an
+  explicit background_color fed through contrast-override, which emits scoped
+  --color-* vars on .color-custom-{section.id}; .section-background paints
+  --color-background. (This theme does not use color-scheme-N classes.)
+
+  Cards match the Wardrobes (collection-list) section: a fixed 4/5 (portrait)
+  media box with a white rounded frame. Because 4/5 can crop the source image,
+  the background image uses object-fit:cover / object-position:center; hotspot
+  x/y percentages are relative to this (possibly cropped) box.
 {%- endcomment -%}
 
 <script
@@ -54,78 +60,259 @@
     --maximum-width-dialog: 330px;
     --width-product-image-dialog: 110px;
     --product-title-gap: {{ section.settings.product_title_gap }}px;
+    --ab-frame-color: {{ settings.color_palette.background }};
   "
 >
   <div class="ab-celebrity-looks__inner">
     <div class="ab-celebrity-looks__header">
+      {% content_for 'block', type: 'text', id: 'eyebrow' %}
       {% content_for 'block', type: 'text', id: 'heading' %}
     </div>
 
-    <div class="ab-celebrity-looks__row">
-      {% content_for 'blocks' %}
-    </div>
+    <celebrity-looks-carousel class="ab-celebrity-looks__carousel">
+      <button
+        type="button"
+        class="ab-celebrity-looks__arrow ab-celebrity-looks__arrow--prev button button-unstyled button-unstyled--transparent flip-x"
+        data-looks-prev
+        aria-label="{{ 'accessibility.slideshow_previous' | t | default: 'Previous look' }}"
+        hidden
+      >
+        <span class="svg-wrapper icon-arrow">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+      </button>
+
+      <div class="ab-celebrity-looks__row" data-looks-track>
+        {% content_for 'blocks' %}
+      </div>
+
+      <button
+        type="button"
+        class="ab-celebrity-looks__arrow ab-celebrity-looks__arrow--next button button-unstyled button-unstyled--transparent"
+        data-looks-next
+        aria-label="{{ 'accessibility.slideshow_next' | t | default: 'Next look' }}"
+        hidden
+      >
+        <span class="svg-wrapper icon-arrow">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+      </button>
+    </celebrity-looks-carousel>
   </div>
 </div>
 
 {% stylesheet %}
-  /* Heading shares the looks-row container and is centred over it. */
   .ab-celebrity-looks__inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     width: 100%;
   }
 
+  /* Heading shares the track's container; its text alignment is set by the
+   * template's heading block, so its start lines up with the track container. */
   .ab-celebrity-looks__header {
     width: 100%;
-    text-align: center;
-    margin-block-end: 28px;
+    /* Matches wardrobes: heading pad-end (8px) + section gap (12px) = 20px to cards. */
+    margin-block-end: 12px;
   }
 
-  /* Looks row: centred grid of card-width columns.
-   * 100% here is the section content width (same box the collection grid uses),
-   * so each column equals one 4-per-row product card. --looks-colgap mirrors the
-   * collection column gap at each breakpoint. Mobile: two cards fill the row. */
-  .ab-celebrity-looks__row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    justify-content: center;
-    align-items: start;
+  .ab-celebrity-looks__carousel {
+    position: relative;
+    display: block;
     width: 100%;
+  }
+
+  /* Single horizontal track: never wraps; centred when it fits, scrolls from the
+   * start when it overflows (auto margins on the end children do the centring and
+   * collapse to 0 on overflow; `safe center` is a modern reinforcement). */
+  .ab-celebrity-looks__row {
+    /* Matches wardrobes columns_gap (12px). */
+    --looks-colgap: 12px;
+
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--looks-colgap);
+    justify-content: safe center;
+    align-items: flex-start;
+    width: 100%;
+
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-block-end: 12px; /* room for the scrollbar so it doesn't overlap images */
+
+    /* Thin scrollbar in the theme's muted foreground */
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-foreground-rgb) / 0.3) transparent;
+  }
+
+  .ab-celebrity-looks__row::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .ab-celebrity-looks__row::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ab-celebrity-looks__row::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-foreground-rgb) / 0.3);
+    border-radius: 2px;
+  }
+
+  /* Fallback centring for browsers without `safe` keyword support. */
+  .ab-celebrity-looks__row > :first-child {
+    margin-inline-start: auto;
+  }
+
+  .ab-celebrity-looks__row > :last-child {
+    margin-inline-end: auto;
   }
 
   .ab-look {
-    width: 100%;
+    flex: 0 0 auto;
+    width: calc((100% - 3 * var(--looks-colgap)) / 4);
+    scroll-snap-align: start;
   }
 
-  /* Media box takes the image's own ratio. overflow is visible so the hotspot
-   * popover can extend beyond the (card-sized) image without being clipped. */
+  /* Media box matches the wardrobes card: fixed 4/5 (portrait) ratio with a
+   * white rounded frame. overflow stays visible so the hotspot popover can
+   * extend beyond the image; the track's content box still contains the look
+   * box, so nothing is clipped by the scroller. */
   .ab-look__media {
     position: relative;
     width: 100%;
-    aspect-ratio: var(--ratio, 0.8);
+    aspect-ratio: 4 / 5;
     overflow: visible;
+    border: 1px solid var(--ab-frame-color, #ffffff);
+    border-radius: 10px;
+    background-color: var(--ab-frame-color, #ffffff);
+  }
+
+  /* 4/5 can crop the source; cover + centred position (set globally on
+   * .hotspots__background-image) keeps the garment centred. Round the image to
+   * sit inside the frame without clipping the popovers. */
+  .ab-celebrity-looks .hotspots__background-image {
+    border-radius: 10px;
   }
 
   .ab-celebrity-looks .hotspots-container {
     overflow: visible;
   }
 
-  @media screen and (min-width: 750px) {
-    .ab-celebrity-looks__row {
-      --looks-colgap: 60px;
-      grid-template-columns: repeat(2, calc((100% - 3 * var(--looks-colgap)) / 4));
-      gap: 45px;
+  /* Prev/next arrows: desktop (fine pointer) only, and only when overflowing. */
+  .ab-celebrity-looks__arrow {
+    display: none;
+    position: absolute;
+    top: calc(50% - 6px);
+    transform: translateY(-50%);
+    z-index: 3;
+  }
+
+  .ab-celebrity-looks__arrow--prev {
+    inset-inline-start: 0;
+  }
+
+  .ab-celebrity-looks__arrow--next {
+    inset-inline-end: 0;
+  }
+
+  .ab-celebrity-looks__arrow[disabled] {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  @media (min-width: 990px) and (hover: hover) {
+    .ab-celebrity-looks__arrow:not([hidden]) {
+      display: inline-flex;
     }
   }
 
-  @media screen and (min-width: 1200px) {
+  /* Touch devices: hide the scrollbar, use native momentum scroll. */
+  @media (hover: none) {
     .ab-celebrity-looks__row {
-      --looks-colgap: 100px;
+      scrollbar-width: none;
+    }
+
+    .ab-celebrity-looks__row::-webkit-scrollbar {
+      display: none;
     }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('celebrity-looks-carousel')) {
+    class CelebrityLooksCarousel extends HTMLElement {
+      connectedCallback() {
+        this.track = this.querySelector('[data-looks-track]');
+        this.prevButton = this.querySelector('[data-looks-prev]');
+        this.nextButton = this.querySelector('[data-looks-next]');
+        if (!this.track) return;
+
+        this.update = this.update.bind(this);
+        this.onScroll = this.onScroll.bind(this);
+
+        if (this.prevButton) this.prevButton.addEventListener('click', () => this.scrollByLook(-1));
+        if (this.nextButton) this.nextButton.addEventListener('click', () => this.scrollByLook(1));
+        this.track.addEventListener('scroll', this.onScroll, { passive: true });
+
+        if ('ResizeObserver' in window) {
+          this.resizeObserver = new ResizeObserver(this.update);
+          this.resizeObserver.observe(this.track);
+        } else {
+          window.addEventListener('resize', this.update);
+        }
+
+        this.update();
+      }
+
+      disconnectedCallback() {
+        if (this.resizeObserver) this.resizeObserver.disconnect();
+        else window.removeEventListener('resize', this.update);
+        if (this.track) this.track.removeEventListener('scroll', this.onScroll);
+      }
+
+      lookStep() {
+        const look = this.track.querySelector('.ab-look');
+        if (!look) return this.track.clientWidth;
+        const styles = getComputedStyle(this.track);
+        const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+        return look.getBoundingClientRect().width + gap;
+      }
+
+      scrollByLook(direction) {
+        this.track.scrollBy({ left: direction * this.lookStep(), behavior: 'smooth' });
+      }
+
+      onScroll() {
+        this.closePopovers();
+        this.update();
+      }
+
+      // Close any open hotspot popover on scroll so it can't linger half-scrolled.
+      closePopovers() {
+        this.querySelectorAll('product-hotspot-component').forEach((hotspot) => {
+          const dialog = hotspot.querySelector('dialog.hotspot-dialog');
+          if (dialog && dialog.open && typeof hotspot.closeDialog === 'function') {
+            hotspot.closeDialog();
+          }
+        });
+      }
+
+      update() {
+        const track = this.track;
+        const overflowing = track.scrollWidth - track.clientWidth > 1;
+        const atStart = track.scrollLeft <= 1;
+        const atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+
+        if (this.prevButton) {
+          this.prevButton.hidden = !overflowing;
+          this.prevButton.disabled = atStart;
+        }
+        if (this.nextButton) {
+          this.nextButton.hidden = !overflowing;
+          this.nextButton.disabled = atEnd;
+        }
+      }
+    }
+
+    customElements.define('celebrity-looks-carousel', CelebrityLooksCarousel);
+  }
+{% endjavascript %}
 
 {% schema %}
 {
@@ -225,7 +412,7 @@
       "max": 100,
       "step": 1,
       "unit": "px",
-      "default": 40
+      "default": 15
     },
     {
       "type": "range",
@@ -235,7 +422,7 @@
       "max": 100,
       "step": 1,
       "unit": "px",
-      "default": 40
+      "default": 15
     }
   ],
   "presets": [
@@ -245,13 +432,42 @@
         "background_color": "#241A14"
       },
       "blocks": {
+        "eyebrow": {
+          "type": "text",
+          "static": true,
+          "settings": {
+            "text": "<p>AS SEEN ON</p>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "custom",
+            "font": "var(--font-body--family)",
+            "font_size": "0.75rem",
+            "line_height": "normal",
+            "letter_spacing": "loose",
+            "case": "uppercase",
+            "wrap": "pretty",
+            "text_color": "#e7ce93",
+            "padding-block-end": 8
+          }
+        },
         "heading": {
           "type": "text",
           "static": true,
           "settings": {
-            "text": "<h2>Shop the look</h2>",
+            "text": "<h2>Worn by Celebrities</h2>",
+            "width": "100%",
+            "max_width": "normal",
             "alignment": "center",
-            "type_preset": "h4"
+            "type_preset": "h4",
+            "font": "var(--font-heading--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "#eae6e6",
+            "padding-block-end": 8
           }
         },
         "look-1": {
