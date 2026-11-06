@@ -20,11 +20,13 @@
   x/y percentages are relative to this (possibly cropped) box.
 {%- endcomment -%}
 
-<script
-  src="{{ 'product-hotspot.js' | asset_url }}"
-  type="module"
-  fetchpriority="low"
-></script>
+{%- comment -%}
+  Hotspots are driven by this section's own scoped <celebrity-looks-carousel>
+  element (see the javascript block below): it reads each hotspot's product data
+  from the server-rendered markup and builds a native [popover] card in the top
+  layer. We intentionally do NOT load product-hotspot.js — it fetched the product
+  (GET /products/<handle>) and failed to render. No fetch, no dependency on it.
+{%- endcomment -%}
 
 {% render 'quick-add-styles' %}
 {% render 'quick-add-modal-styles' %}
@@ -69,7 +71,7 @@
       {% content_for 'block', type: 'text', id: 'heading' %}
     </div>
 
-    <celebrity-looks-carousel class="ab-celebrity-looks__carousel">
+    <celebrity-looks-carousel class="ab-celebrity-looks__carousel" data-section-id="{{ section.id }}">
       <button
         type="button"
         class="ab-celebrity-looks__arrow ab-celebrity-looks__arrow--prev button button-unstyled button-unstyled--transparent flip-x"
@@ -194,6 +196,28 @@
     overflow: visible;
   }
 
+  /* The dot's clickable element is .hotspot-trigger (sized --hotspot-size). Give
+   * it a >=44px transparent hit area so taps/clicks land reliably without
+   * enlarging the visible dot, and keep it above the image and clickable. The
+   * parent .hotspot box is --button-size but is not the click target. */
+  .ab-celebrity-looks .hotspot-trigger {
+    pointer-events: auto;
+    z-index: var(--layer-raised, 2);
+    overflow: visible;
+  }
+
+  .ab-celebrity-looks .hotspot-trigger::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(44px, 100%);
+    height: max(44px, 100%);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    /* transparent hit area only — no background */
+  }
+
   /* Prev/next arrows: desktop (fine pointer) only, and only when overflowing. */
   .ab-celebrity-looks__arrow {
     display: none;
@@ -233,15 +257,14 @@
     }
   }
 
-  /* Mobile (<750px): match the Wardrobes collection-list carousel exactly.
-   * Wardrobes mobile values copied: full-bleed row (force-full-width), card
-   * width clamp(150px, 60cqw, 450px) where the container is the full-viewport
-   * row (= 60vw); gap 12px (columns_gap); start/end gutter and snap padding =
-   * --util-page-margin-offset; scroll-snap-align: start; next card peeks; the
-   * 4/5 portrait ratio + white rounded frame already apply at every breakpoint.
-   * Start-aligned (NOT centred). Arrows are already hidden on touch (only shown
-   * at >=990px with hover). Desktop (>=990px) and tablet (750-989px, where
-   * Wardrobes shows its 4-up grid) are untouched. */
+  /* Mobile (<750px): match the Wardrobes collection-list carousel — full-bleed
+   * single swipe row, 60vw cards start-aligned at the page margin, 12px gap,
+   * scroll-snap, next card peeking. NO container-type anywhere: it would make
+   * .ab-look the containing block for the absolutely-positioned hotspot popover
+   * and mis-place/clip it. Dots are sized from the card width with vw instead of
+   * container-query units (60vw card -> 7% ~= 4.2vw, same visual as the old
+   * 7cqi). Desktop (>=990px) and tablet (750-989px, where Wardrobes shows its
+   * 4-up grid) are untouched. */
   @media screen and (max-width: 749px) {
     .ab-celebrity-looks__row {
       justify-content: flex-start;
@@ -251,7 +274,6 @@
       scroll-padding-inline-start: var(--util-page-margin-offset, 20px);
     }
 
-    /* Undo the desktop auto-margin centring so the first card starts at the gutter. */
     .ab-celebrity-looks__row > :first-child {
       margin-inline-start: 0;
     }
@@ -262,13 +284,134 @@
 
     .ab-look {
       width: clamp(150px, 60vw, 450px);
-      container-type: inline-size;
     }
 
-    /* Hotspot dots scale with the card (container query on the look); the dot
-     * centre stays at the same x/y %. Overrides the 36px set inline on the block. */
     .ab-look__media {
-      --hotspot-size: clamp(18px, 7cqi, 32px) !important;
+      --hotspot-size: clamp(18px, 4.2vw, 32px) !important;
+    }
+  }
+
+  /* The stock <dialog> is only a data source now (JS reads its image/price);
+   * never show it. Our own native [popover] card replaces it. */
+  .ab-celebrity-looks .hotspot-dialog {
+    display: none !important;
+  }
+
+  /* Native popover product card (top layer, so the scroll track never clips it).
+   * Appended to <body> by the section's JS; styled here. */
+  .ab-hotspot-card {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: min(320px, calc(100vw - 32px));
+    padding: 0;
+    background-color: #33251c;
+    color: #fff6e4;
+    border: 1px solid #453b33;
+    border-radius: 0;
+    box-shadow: 0 10px 40px rgb(0 0 0 / 0.35);
+    overflow: hidden;
+  }
+
+  .ab-hotspot-card::backdrop {
+    background: transparent;
+  }
+
+  .ab-hotspot-card__inner {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .ab-hotspot-card__close {
+    position: absolute;
+    top: 6px;
+    inset-inline-end: 6px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: rgb(22 16 13 / 0.55);
+    color: #fff6e4;
+    border: 0;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .ab-hotspot-card__media {
+    display: block;
+    width: 100%;
+  }
+
+  .ab-hotspot-card__media img,
+  .ab-hotspot-card__media svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ab-hotspot-card__title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .ab-hotspot-card__price,
+  .ab-hotspot-card__price * {
+    color: #dbbf7c;
+  }
+
+  /* AB secondary / outline button: transparent, cream border + text, gold on
+   * hover, uppercase + tracked. */
+  .ab-hotspot-card__cta {
+    display: inline-grid;
+    align-content: center;
+    justify-items: center;
+    width: 100%;
+    padding: 13px 20px;
+    font-family: var(--font-accent--family);
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #fff6e4;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px #fff6e4;
+    transition: color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .ab-hotspot-card__cta:hover {
+    color: #dbbf7c;
+    box-shadow: inset 0 0 0 1px #dbbf7c;
+  }
+
+  /* Mobile: bottom sheet (no JS positioning needed). */
+  @media screen and (max-width: 749px) {
+    .ab-hotspot-card {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: 100%;
+      max-height: 70vh;
+      overflow-y: auto;
+      border-inline: 0;
+      border-block-end: 0;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .ab-hotspot-card::backdrop {
+      background: rgb(0 0 0 / 0.4);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ab-hotspot-card {
+      transition: opacity 0.2s ease, translate 0.2s ease;
     }
   }
 {% endstylesheet %}
@@ -284,10 +427,17 @@
 
         this.update = this.update.bind(this);
         this.onScroll = this.onScroll.bind(this);
+        this.reposition = this.reposition.bind(this);
+        this.builtCards = [];
+        this.openCard = null;
+        this.openTrigger = null;
 
         if (this.prevButton) this.prevButton.addEventListener('click', () => this.scrollByLook(-1));
         if (this.nextButton) this.nextButton.addEventListener('click', () => this.scrollByLook(1));
         this.track.addEventListener('scroll', this.onScroll, { passive: true });
+        // Page scroll / resize reposition an open card; track scroll (onScroll) closes it.
+        window.addEventListener('resize', this.reposition, { passive: true });
+        window.addEventListener('scroll', this.reposition, { passive: true });
 
         if ('ResizeObserver' in window) {
           this.resizeObserver = new ResizeObserver(this.update);
@@ -297,12 +447,119 @@
         }
 
         this.update();
+        this.setupHotspots();
       }
 
       disconnectedCallback() {
         if (this.resizeObserver) this.resizeObserver.disconnect();
         else window.removeEventListener('resize', this.update);
         if (this.track) this.track.removeEventListener('scroll', this.onScroll);
+        window.removeEventListener('resize', this.reposition);
+        window.removeEventListener('scroll', this.reposition);
+        (this.builtCards || []).forEach((card) => card.remove());
+        this.builtCards = [];
+      }
+
+      // Build a native [popover] product card per hotspot from the server-rendered
+      // product data (image/title/price/url already in the DOM) — no fetch, no
+      // dependency on product-hotspot.js. Hotspots with no product get nothing.
+      setupHotspots() {
+        const sectionId = this.dataset.sectionId || 'sec';
+        this.querySelectorAll('product-hotspot-component').forEach((comp) => {
+          const url = comp.getAttribute('data-product-url');
+          const trigger = comp.querySelector('.hotspot-trigger');
+          if (!url || !trigger) return;
+
+          const dialog = comp.querySelector('.hotspot-dialog');
+          const title = comp.getAttribute('data-product-title') || '';
+          const id = 'ab-pop-' + sectionId + '-' + (comp.getAttribute('data-id') || '');
+
+          const imgEl =
+            dialog &&
+            dialog.querySelector('.hotspot-dialog__product-image, .hotspot-dialog__placeholder-product-image');
+          const priceEl = dialog && dialog.querySelector('.hotspot-dialog__product-price');
+          const imageHTML = imgEl ? imgEl.outerHTML : '';
+          const priceHTML = priceEl ? priceEl.innerHTML : '';
+
+          const stale = document.getElementById(id);
+          if (stale) stale.remove();
+
+          const card = document.createElement('div');
+          card.id = id;
+          card.className = 'ab-hotspot-card';
+          card.setAttribute('popover', 'auto');
+          card.setAttribute('role', 'dialog');
+          card.setAttribute('aria-label', title);
+          card.innerHTML =
+            '<button type="button" class="ab-hotspot-card__close" data-close aria-label="Close">&times;</button>' +
+            '<div class="ab-hotspot-card__inner">' +
+            (imageHTML ? '<span class="ab-hotspot-card__media">' + imageHTML + '</span>' : '') +
+            '<p class="ab-hotspot-card__title"></p>' +
+            (priceHTML ? '<div class="ab-hotspot-card__price">' + priceHTML + '</div>' : '') +
+            '<a class="ab-hotspot-card__cta"></a>' +
+            '</div>';
+          // Set text/href via properties to avoid HTML injection from the title.
+          card.querySelector('.ab-hotspot-card__title').textContent = title;
+          const cta = card.querySelector('.ab-hotspot-card__cta');
+          cta.setAttribute('href', url);
+          cta.textContent = 'View piece';
+
+          document.body.appendChild(card);
+          this.builtCards.push(card);
+
+          // Turn the existing dot into the native popover invoker; drop the
+          // borrowed declarative handler so it can never fire/fetch.
+          trigger.setAttribute('popovertarget', id);
+          trigger.setAttribute('aria-haspopup', 'dialog');
+          trigger.setAttribute('aria-label', 'View ' + title);
+          trigger.removeAttribute('on:click');
+
+          const closeBtn = card.querySelector('[data-close]');
+          if (closeBtn) closeBtn.addEventListener('click', () => card.hidePopover());
+
+          card.addEventListener('toggle', (event) => {
+            if (event.newState === 'open') {
+              this.openCard = card;
+              this.openTrigger = trigger;
+              this.positionCard(card, trigger);
+            } else if (this.openCard === card) {
+              this.openCard = null;
+              this.openTrigger = null;
+            }
+          });
+        });
+      }
+
+      // Desktop (>=750px): place the card next to its dot, preferring the right,
+      // flipping left/up to stay in the viewport, 12px offset. Mobile uses the
+      // CSS bottom sheet, so clear any inline coords.
+      positionCard(card, trigger) {
+        if (window.matchMedia('(max-width: 749px)').matches) {
+          card.style.left = '';
+          card.style.top = '';
+          return;
+        }
+        const rect = trigger.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+        const cw = card.offsetWidth;
+        const ch = card.offsetHeight;
+        const GAP = 12;
+
+        let left = rect.right + GAP;
+        if (left + cw > vw - 8) left = rect.left - GAP - cw; // flip to the left
+        if (left < 8) left = Math.max(8, Math.min(rect.left, vw - cw - 8));
+
+        let top = rect.top + rect.height / 2 - ch / 2;
+        if (top + ch > vh - 8) top = vh - ch - 8; // keep within viewport bottom
+        if (top < 8) top = 8;
+
+        card.style.left = left + 'px';
+        card.style.top = top + 'px';
+      }
+
+      reposition() {
+        if (this.openCard && this.openTrigger) this.positionCard(this.openCard, this.openTrigger);
       }
 
       lookStep() {
@@ -322,13 +579,12 @@
         this.update();
       }
 
-      // Close any open hotspot popover on scroll so it can't linger half-scrolled.
+      // Close any open card on track scroll so it can't linger half-scrolled.
       closePopovers() {
-        this.querySelectorAll('product-hotspot-component').forEach((hotspot) => {
-          const dialog = hotspot.querySelector('dialog.hotspot-dialog');
-          if (dialog && dialog.open && typeof hotspot.closeDialog === 'function') {
-            hotspot.closeDialog();
-          }
+        (this.builtCards || []).forEach((card) => {
+          try {
+            if (card.matches(':popover-open')) card.hidePopover();
+          } catch (e) {}
         });
       }
 
