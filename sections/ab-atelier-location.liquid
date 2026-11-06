@@ -1,0 +1,407 @@
+{%- comment -%}
+  AB Atelier location — two-column "visit the atelier" section matching the
+  ab-celebrity-looks aesthetic (coffee #241A14 background, cream #FFF6E4 text,
+  gold #DBBF7C accents, #453B33 borders, square UI).
+
+  Desktop: text left (~40%), map right (~60%), vertically centred.
+  Mobile (<750px): stacked — text first, map below, full width.
+
+  Colours are hard-coded hex (like ab-celebrity-looks' hotspot card) rather than
+  color schemes; this theme uses color_palette, never color schemes.
+{%- endcomment -%}
+
+{%- liquid
+  assign map_query = section.settings.map_query | strip
+  assign has_map = false
+  if map_query != blank
+    assign has_map = true
+  endif
+  capture wa_href
+    render 'whatsapp-link', message: section.settings.whatsapp_message
+  endcapture
+  assign wa_href = wa_href | strip
+  assign directions_href = 'https://www.google.com/maps/dir/?api=1&destination=' | append: map_query | url_encode
+-%}
+
+<div
+  class="ab-atelier{% if has_map == false %} ab-atelier--no-map{% endif %}{% if section.settings.tint_map %} ab-atelier--tinted{% endif %}"
+  style="
+    --ab-atelier-pt: {{ section.settings.padding_top }}px;
+    --ab-atelier-pb: {{ section.settings.padding_bottom }}px;
+    --ab-atelier-map-h: {{ section.settings.map_height_desktop }}px;
+  "
+>
+  <div class="ab-atelier__inner">
+    <div class="ab-atelier__text">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="ab-atelier__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="ab-atelier__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <div class="ab-atelier__body">{{ section.settings.body }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.address != blank -%}
+        <address class="ab-atelier__address">{{ section.settings.address | strip | newline_to_br }}</address>
+      {%- endif -%}
+
+      {%- if section.settings.appointment_note != blank -%}
+        <p class="ab-atelier__note">{{ section.settings.appointment_note }}</p>
+      {%- endif -%}
+
+      <div class="ab-atelier__buttons">
+        <a
+          class="ab-atelier__btn ab-atelier__btn--primary"
+          href="{{ wa_href }}"
+          target="_blank"
+          rel="noopener"
+        >
+          Book on WhatsApp
+        </a>
+
+        {%- if has_map -%}
+          <a
+            class="ab-atelier__btn ab-atelier__btn--secondary"
+            href="{{ directions_href }}"
+            target="_blank"
+            rel="noopener"
+          >
+            Get directions
+          </a>
+        {%- endif -%}
+
+        <a class="ab-atelier__btn ab-atelier__btn--link" href="tel:+918287222999">
+          Call +91 82872 22999
+        </a>
+      </div>
+    </div>
+
+    {%- if has_map -%}
+      <div class="ab-atelier__map">
+        <iframe
+          src="https://www.google.com/maps?q={{ map_query | url_encode }}&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Map to the Achin Bindlish atelier"
+          allowfullscreen
+        ></iframe>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ClothingStore",
+    "name": "Achin Bindlish",
+    "telephone": "+918287222999",
+    "url": {{ shop.url | json }},
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "D-49, 3rd Floor, Defence Colony",
+      "addressLocality": "New Delhi",
+      "addressRegion": "Delhi",
+      "postalCode": "110024",
+      "addressCountry": "IN"
+    }
+  }
+</script>
+
+{% stylesheet %}
+  .ab-atelier {
+    --ab-coffee: #241a14;
+    --ab-cream: #fff6e4;
+    --ab-gold: #dbbf7c;
+    --ab-border: #453b33;
+
+    background-color: var(--ab-coffee);
+    color: var(--ab-cream);
+    padding-block: var(--ab-atelier-pt, 64px) var(--ab-atelier-pb, 64px);
+    padding-inline: var(--util-page-margin-offset, 20px);
+  }
+
+  .ab-atelier__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+    gap: 48px;
+    align-items: center;
+    /* Match ab-celebrity-looks content width (page-width container). */
+    max-width: var(--page-width, 1440px);
+    margin-inline: auto;
+  }
+
+  .ab-atelier--no-map .ab-atelier__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* ---- Text column ---- */
+  .ab-atelier__eyebrow {
+    margin: 0 0 12px;
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ab-gold);
+  }
+
+  .ab-atelier__heading {
+    margin: 0 0 16px;
+    font-family: var(--font-heading--family);
+    font-size: 1.75rem;
+    line-height: 1.15;
+    color: var(--ab-cream);
+  }
+
+  .ab-atelier__body {
+    margin-block-end: 20px;
+    color: var(--ab-cream);
+  }
+
+  .ab-atelier__body p {
+    margin: 0 0 1em;
+  }
+
+  .ab-atelier__body p:last-child {
+    margin-block-end: 0;
+  }
+
+  .ab-atelier__address {
+    display: block;
+    margin-block-end: 20px;
+    font-style: normal;
+    line-height: 1.6;
+    color: var(--ab-cream);
+  }
+
+  .ab-atelier__note {
+    margin: 0 0 24px;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--ab-gold);
+    font-size: 0.8125rem;
+    color: var(--ab-gold);
+  }
+
+  .ab-atelier__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Shared button base: uppercase, tracked, square corners. */
+  .ab-atelier__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    font-family: var(--font-accent--family);
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 0;
+  }
+
+  .ab-atelier__btn--primary {
+    color: var(--ab-coffee);
+    background: var(--ab-gold);
+    box-shadow: inset 0 0 0 1px var(--ab-gold);
+  }
+
+  .ab-atelier__btn--primary:hover {
+    background: var(--ab-cream);
+    box-shadow: inset 0 0 0 1px var(--ab-cream);
+  }
+
+  /* Secondary: outline gold. */
+  .ab-atelier__btn--secondary {
+    color: var(--ab-gold);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ab-gold);
+  }
+
+  .ab-atelier__btn--secondary:hover {
+    color: var(--ab-coffee);
+    background: var(--ab-gold);
+  }
+
+  /* Text link. */
+  .ab-atelier__btn--link {
+    padding-inline: 4px;
+    color: var(--ab-gold);
+    background: transparent;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .ab-atelier__btn--link:hover {
+    color: var(--ab-cream);
+  }
+
+  /* Visible focus outlines in gold. */
+  .ab-atelier__btn:focus-visible,
+  .ab-atelier__map iframe:focus-visible {
+    outline: 2px solid var(--ab-gold);
+    outline-offset: 2px;
+  }
+
+  /* ---- Map column ---- */
+  .ab-atelier__map {
+    border: 1px solid var(--ab-border);
+    border-radius: 0;
+    line-height: 0;
+  }
+
+  .ab-atelier__map iframe {
+    display: block;
+    width: 100%;
+    height: var(--ab-atelier-map-h, 480px);
+    border: 0;
+  }
+
+  /* Tint the map until the user interacts with it, then reveal full colour. */
+  .ab-atelier--tinted .ab-atelier__map iframe {
+    filter: grayscale(1) sepia(0.35) contrast(1.05) brightness(0.9);
+  }
+
+  .ab-atelier--tinted .ab-atelier__map:hover iframe,
+  .ab-atelier--tinted .ab-atelier__map:focus-within iframe {
+    filter: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ab-atelier__btn {
+      transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ab-atelier--tinted .ab-atelier__map iframe {
+      transition: filter 0.3s ease;
+    }
+  }
+
+  /* Mobile: stacked, text first, map below, full width. */
+  @media screen and (max-width: 749px) {
+    .ab-atelier__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+
+    .ab-atelier__map iframe {
+      height: 320px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "AB Atelier location",
+  "tag": "section",
+  "class": "ab-atelier-section",
+  "enabled_on": {
+    "templates": ["index", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text column"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "VISIT THE ATELIER"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "By appointment only"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body",
+      "default": "<p>Step into our Defence Colony atelier for a private consultation, fittings and a closer look at the collection. Visits are by appointment only.</p>"
+    },
+    {
+      "type": "textarea",
+      "id": "address",
+      "label": "Address",
+      "default": "Achin Bindlish\nD-49, 3rd Floor, Defence Colony\nNew Delhi 110024"
+    },
+    {
+      "type": "text",
+      "id": "appointment_note",
+      "label": "Appointment note",
+      "default": "By appointment only"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_message",
+      "label": "WhatsApp prefilled message",
+      "default": "Hi, I'd like to book an appointment at the Achin Bindlish atelier."
+    },
+    {
+      "type": "header",
+      "content": "Map column"
+    },
+    {
+      "type": "text",
+      "id": "map_query",
+      "label": "Map location query",
+      "info": "Leave blank to hide the map and let the text fill the width.",
+      "default": "Achin Bindlish, D-49, Defence Colony, New Delhi 110024"
+    },
+    {
+      "type": "range",
+      "id": "map_height_desktop",
+      "label": "Map height (desktop)",
+      "min": 300,
+      "max": 700,
+      "step": 20,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "checkbox",
+      "id": "tint_map",
+      "label": "Tint map until hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "AB Atelier location"
+    }
+  ]
+}
+{% endschema %}
